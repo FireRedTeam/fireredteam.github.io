@@ -1,0 +1,12 @@
+prompt_processed_snr0_p262#p262_085#en_17 Many gentlemen followed him, greatly distressed at the sad accident which had befallen the general favourite, for it was soon on everybody's lips that the sufferer was little Luis.
+prompt_before_snr0_p262#p262_085#en_17 Many gentlemen followed him, greatly distressed at the sad accident which had befallen the general favourite, for it was soon on everybody's lips that the sufferer was little Luis.
+prompt_processed_snr0_16000001#zh_08 可以理解为，调整的实质是放松了单笔申报最大数量的限制。
+prompt_before_snr0_16000001#zh_08 可以理解为，调整的实质是放松了单笔申报最大数量的限制。
+prompt_before_snr10_14000007#zh_06 绑匪给他穿上了自杀式炸弹，背心，在营救人员到来时引爆
+prompt_processed_snr10_14000007#zh_06 绑匪给他穿上了自杀式炸弹，背心，在营救人员到来时引爆。。
+prompt_before_snr10_guohaohan_chn_2#zh_14 您看，您这个行业的很多客户，都通过线上推广实现销量增长了。
+prompt_processed_snr10_guohaohan_chn_2#zh_14 您看，您这个行业的很多客户，都通过线上推广实现销量增长了。
+prompt_before_snr20_p238#p238_083#en_11 The hawk, embittered by the loss of his first quarry, had become as dogged in pursuit as a weasel, not to be shaken off or evaded or deceived.
+prompt_processed_snr20_p238#p238_083#en_11 The hawk, embittered by the loss of his first quarry, had become as dogged in pursuit as a weasel, not to be shaken off or evaded or deceived.
+prompt_before_snr20_zhiming_chn_0#zh_19 首尔中央地方法院十四日就李明基涉嫌虐待员工案作出一审宣判。
+prompt_after_snr20_zhiming_chn_0#zh_19 首尔中央地方法院十四日就李明基涉嫌虐待员工案作出一审宣判。
