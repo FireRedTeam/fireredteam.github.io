@@ -98,99 +98,50 @@
 <div class="container pt-5 mt-5 shadow-lg p-5 mb-5 bg-white rounded">		
 	<h2 id="OpenSourceProjects" style="text-align: center;">Opensource Projects</h2>
 	<table border="0" cellPadding="2" style="width: 100%;">
-		<tbody>
-			<!-- Data row 1 -->
+		<tbody id="proj_tbody">
+			<!-- Example Row -->
+			<!--
 			<tr>
-				<!-- Image -->
 				<td align="center" valign="middle" style="width: 25%; padding: 5px;" >
 					<img src="pics/projects_publications/fireredchat.jpg" alt="Intro image" class="middle" style="max-height: 120px; width: auto;">
 				</td>
-				<!-- Intro part -->
 				<td align="left" valign="middle" style="padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
-					<!-- Title -->
 					<b>FireRedChat: A Fully Self-Hosted Solution for Full-Duplex Voice Interaction</b>
 					<br>
-					<!-- Authors -->
 					Junjie Chen, Yao Hu, Junjie Li, Kangyue Li, Kun Liu, Wenpeng Li, Xu Li, Ziyuan Li, Feiyu Shen, Xu Tang, Manzhen Wei, Yichen Wu, Fenglong Xie, Kaituo Xu, Kun Xie
 					<br>
-					<!-- Footnote -->
 					<a href="https://arxiv.org/abs/2509.06502" class="footnote_btn"><b>ARXIV</b></a>
 					<a href="https://github.com/FireRedTeam/FireRedChat" class="footnote_btn"><b>CODE</b></a>
 					<a href="https://fireredteam.github.io/demos/firered_chat/" class="footnote_btn"><b>DEMO</b></a>
 				</td>
 			</tr>
-			<!-- Data row 2 -->
-			<tr>
-				<!-- Image -->
-				<td align="center" valign="middle" style="width: 25%; padding: 5px;" >
-					<img src="pics/projects_publications/ivc_prune.jpg" alt="Intro image" class="middle" style="max-height: 120px; width: auto;">
-				</td>
-				<!-- Intro part -->
-				<td align="left" valign="middle" style="padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
-					<!-- Title -->
-					<b>IVC-PRUNE: REVEALING THE IMPLICIT VISUAL COORDINATES IN LVLMS FOR VISION TOKEN PRUNING</b>
-					<br>
-					<!-- Authors -->
-					Zhichao Sun, Yidong Ma, Gang Liu, Yibo Chen, Xu Tang, Yao Hu, Yongchao Xu
-					<br>
-					<!-- Footnote -->
-					<a href="https://arxiv.org/abs/2602.03060" class="footnote_btn"><b>ARXIV</b></a>
-					<a href="https://github.com/FireRedTeam/IVC-Prune" class="footnote_btn"><b>CODE</b></a>
-				</td>
-			</tr>
-
+			-->
 		</tbody>
 	</table>
 </div>
 
+
 <div class="container pt-5 mt-5 shadow-lg p-5 mb-5 bg-white rounded">		
 	<h2 id="OpenSourceProjects" style="text-align: center;">Publications</h2>
 	<table border="0" cellPadding="2" style="width: 100%;">
-		<tbody>
-			<!-- Data row 1 -->
+		<tbody id="papers_tbody">
+			<!-- Example Row -->
+			<!--
 			<tr>
-				<!-- Image -->
 				<td align="center" valign="middle" style="width: 25%; padding: 5px;" >
 					<img src="pics/projects_publications/hymirec.jpg" alt="Intro image" class="middle" style="max-height: 120px; width: auto;">
 				</td>
-				<!-- Intro part -->
 				<td align="left" valign="middle" style="padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
-					<!-- Title -->
 					<b>HyMiRec: A Hybrid Multi-interest Learning Framework for LLM-based Sequential Recommendation</b>
 					<br>
-					<!-- Authors -->
 					Jingyi Zhou, Cheng Chen, Kai Zuo, Manjie Xu, Zhendong Fu, Yibo Chen, Xu Tang, Yao Hu
 					<br>
-					<!-- Conference -->
 					<i>(WWW) The ACM Web Conference</i>
 					<br>
-					<!-- Footnote -->
 					<a href="https://arxiv.org/pdf/2510.13738" class="footnote_btn"><b>ARXIV</b></a>
 				</td>
 			</tr>
-			<!-- Data row 2 -->
-			<tr>
-				<!-- Image -->
-				<td align="center" valign="middle" style="width: 25%; padding: 5px;" >
-					<img src="pics/projects_publications/ivc_prune.jpg" alt="Intro image" class="middle" style="max-height: 120px; width: auto;">
-				</td>
-				<!-- Intro part -->
-				<td align="left" valign="middle" style="padding-left: 15px; padding-top: 10px;">
-					<!-- Title -->
-					<b>IVC-PRUNE: REVEALING THE IMPLICIT VISUAL COORDINATES IN LVLMS FOR VISION TOKEN PRUNING</b>
-					<br>
-					<!-- Authors -->
-					Zhichao Sun, Yidong Ma, Gang Liu, Yibo Chen, Xu Tang, Yao Hu, Yongchao Xu
-					<br>
-					<!-- Conference -->
-					<i>(ICLR) The International Conference on Learning Representations</i>
-					<br>
-					<!-- Footnote -->
-					<a href="https://arxiv.org/abs/2602.03060" class="footnote_btn"><b>ARXIV</b></a>
-					<a href="https://github.com/FireRedTeam/IVC-Prune" class="footnote_btn"><b>CODE</b></a>
-				</td>
-			</tr>
-			
+			-->
 		</tbody>
 	</table>
 </div>
@@ -232,3 +183,139 @@
 
 </body>
 </html>
+
+<!-- Import data -->
+<script src="./data.js"></script>
+<!-- Render content -->
+<script>
+
+// Opensource Projects
+function RenderOpensourceProject(proj_list) {
+	var tbd_container = document.getElementById("proj_tbody");
+	
+	function _RenderOneRow(row_data) {
+		var tr = document.createElement("tr");
+		// Image on the left
+		var img_td = document.createElement("td");
+		img_td.align = "center";
+		img_td.vAlign = "middle";
+		img_td.style = "width: 20%; padding: 5px;";
+		var img = document.createElement("img");
+		img.src = row_data["image"]
+		img.alt = "Intro image"
+		img.className = "middle";
+		img.style = "max-height: 100px; width: auto;";
+		img_td.appendChild(img);
+		tr.appendChild(img_td);
+		// Text on the right
+		var text_td = document.createElement("td");
+		text_td.align = "left";
+		text_td.vAlign = "middle";
+		text_td.style = "padding-left: 10px; padding-top: 10px; padding-bottom: 10px;";
+		var title_b = document.createElement("b");
+		title_b.innerText = row_data['title'];
+		text_td.appendChild(title_b);
+		text_td.appendChild(document.createElement("br"));
+		text_td.append(row_data["authors"]);
+		text_td.appendChild(document.createElement("br"));
+		if (row_data["arxiv_link"] !== null) {
+			var arxiv_btn = document.createElement("a");
+			arxiv_btn.href = row_data["arxiv_link"];
+			arxiv_btn.className = "footnote_btn";
+			arxiv_btn.innerHTML = "<b>ARXIV</b>";
+			text_td.appendChild(arxiv_btn);
+		}
+		if (row_data["code_link"] !== null) {
+			var code_btn = document.createElement("a");
+			code_btn.href = row_data["code_link"];
+			code_btn.className = "footnote_btn";
+			code_btn.innerHTML = "<b>CODE</b>";
+			text_td.appendChild(code_btn);
+		}
+		if (row_data["demo_link"] !== null) {
+			var demo_btn = document.createElement("a");
+			demo_btn.href = row_data["demo_link"];
+			demo_btn.className = "footnote_btn";
+			demo_btn.innerHTML = "<b>DEMO</b>";
+			text_td.appendChild(demo_btn);
+		}
+		tr.appendChild(text_td);
+		return tr;
+	}
+
+	proj_list.forEach(row_data => {
+		var row_elem = _RenderOneRow(row_data);
+		tbd_container.appendChild(row_elem);
+	})
+}
+
+
+// Publications
+function RenderPublications(papers_list) {
+	var tbd_container = document.getElementById("papers_tbody");
+	
+	function _RenderOneRow(row_data) {
+		var tr = document.createElement("tr");
+		// Image on the left
+		var img_td = document.createElement("td");
+		img_td.align = "center";
+		img_td.vAlign = "middle";
+		img_td.style = "width: 20%; padding: 5px;";
+		var img = document.createElement("img");
+		img.src = row_data["image"]
+		img.alt = "Intro image"
+		img.className = "middle";
+		img.style = "max-height: 100px; width: auto;";
+		img_td.appendChild(img);
+		tr.appendChild(img_td);
+		// Text on the right
+		var text_td = document.createElement("td");
+		text_td.align = "left";
+		text_td.vAlign = "middle";
+		text_td.style = "padding-left: 15px; padding-top: 10px; padding-bottom: 10px;";
+		var title_b = document.createElement("b");
+		title_b.innerText = row_data['title'];
+		text_td.appendChild(title_b);
+		text_td.appendChild(document.createElement("br"));
+		text_td.append(row_data["authors"]);
+		text_td.appendChild(document.createElement("br"));
+		var conference_i = document.createElement("i");
+		conference_i.innerText = row_data["conference_name"];
+		text_td.appendChild(conference_i);
+		text_td.appendChild(document.createElement("br"));
+		if (row_data["arxiv_link"] !== null) {
+			var arxiv_btn = document.createElement("a");
+			arxiv_btn.href = row_data["arxiv_link"];
+			arxiv_btn.className = "footnote_btn";
+			arxiv_btn.innerHTML = "<b>ARXIV</b>";
+			text_td.appendChild(arxiv_btn);
+		}
+		if (row_data["code_link"] !== null) {
+			var code_btn = document.createElement("a");
+			code_btn.href = row_data["code_link"];
+			code_btn.className = "footnote_btn";
+			code_btn.innerHTML = "<b>CODE</b>";
+			text_td.appendChild(code_btn);
+		}
+		if (row_data["demo_link"] !== null) {
+			var demo_btn = document.createElement("a");
+			demo_btn.href = row_data["demo_link"];
+			demo_btn.className = "footnote_btn";
+			demo_btn.innerHTML = "<b>DEMO</b>";
+			text_td.appendChild(demo_btn);
+		}
+		tr.appendChild(text_td);
+		return tr;
+	}
+
+	papers_list.forEach(row_data => {
+		var row_elem = _RenderOneRow(row_data);
+		tbd_container.appendChild(row_elem);
+	})
+}
+
+
+// Run
+RenderOpensourceProject(opensource_projects_data);
+RenderPublications(publications_data);
+</script>
