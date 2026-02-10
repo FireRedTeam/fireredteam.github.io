@@ -8,7 +8,7 @@ const opensource_projects_data = [
         "demo_link": "https://fireredteam.github.io/demos/firered_chat"
     },
     {
-        "title": "IVC-PRUNE: REVEALING THE IMPLICIT VISUAL COORDINATES IN LVLMS FOR VISION TOKEN PRUNING",
+        "title": "IVC-Prune: Revealing the Implicit Visual Coordinates in LVLMs for Vision Token Pruning",
         "image": "pics/projects_publications/ivc_prune.jpg",
         "authors": "Zhichao Sun, Yidong Ma, Gang Liu, Yibo Chen, Xu Tang, Yao Hu, Yongchao Xu",
         "arxiv_link": "https://arxiv.org/abs/2602.03060",
@@ -40,7 +40,7 @@ const opensource_projects_data = [
         "demo_link": null
     },
     {
-        "title": "DynamicPose: A robust image-to-video framework for portrait animation driven by pose sequences",
+        "title": "DynamicPose: A Robust Image-to-Video Framework for Portrait Animation Driven by Pose Sequences",
         "image": "pics/projects_publications/dynamicpose.jpg",
         "authors": "Yanqin Chen, Changhao Qiao, Sijie Xu, Yang Chen, Wei Zhu, Dejia Song",
         "arxiv_link": null,
@@ -48,7 +48,7 @@ const opensource_projects_data = [
         "demo_link": null
     },
     {
-        "title": "PhotoPoster: A high-fidelity two-stage pose-driven image generation framework",
+        "title": "PhotoPoster: A High-Fidelity Two-Stage Pose-Driven Image Generation Framework",
         "image": "pics/projects_publications/photo_poster.jpg",
         "authors": "Yanqin Chen, Changhao Qiao, Sijie Xu, Yang Chen, Wei Zhu, Dejia Song",
         "arxiv_link": null,
@@ -66,7 +66,7 @@ const opensource_projects_data = [
     {
         "title": "FireRedASR: Open-Source Industrial-Grade Automatic Speech Recognition Models",
         "image": "pics/projects_publications/fireredasr.jpg",
-        "authors": "Kaituo Xu, Feng-Long Xie, Xu Tang, Yao Hu",
+        "authors": "Kaituo Xu, Fenglong Xie, Xu Tang, Yao Hu",
         "arxiv_link": "https://arxiv.org/pdf/2501.14350",
         "code_link": "https://github.com/FireRedTeam/FireRedASR",
         "demo_link": "https://fireredteam.github.io/demos/firered_asr",
@@ -82,13 +82,13 @@ const opensource_projects_data = [
     {
         "title": "The Xiaohongshu Speech Synthesis System for Blizzard Challenge 2023",
         "image": "pics/projects_publications/fireredtts_2023.jpg",
-        "authors": "Kun Xie, Yi-Chen Wu, Feng-Long Xie",
+        "authors": "Kun Xie, Yichen Wu, Fenglong Xie",
         "arxiv_link": "https://www.isca-archive.org/blizzard_2023/xie23_blizzard.pdf",
         "code_link": null,
         "demo_link": null,
     },
     {
-        "title": "StoryMaker: Towards consistent characters in text-to-image generation",
+        "title": "StoryMaker: Towards Consistent Characters in Text-to-Image Generation",
         "image": "pics/projects_publications/story_maker.jpg",
         "authors": "Zhengguang Zhou, Jing Li, Huaxia Li, Nemo Chen, Xu Tang",
         "arxiv_link": "https://arxiv.org/abs/2409.12576",
@@ -125,7 +125,7 @@ const publications_data = [
         "demo_link": null
     },
     {
-        "title": "IVC-PRUNE: REVEALING THE IMPLICIT VISUAL COORDINATES IN LVLMS FOR VISION TOKEN PRUNING",
+        "title": "IVC-Prune: Revealing the Implicit Visual Coordinates in LVLMs for Vision Token Pruning",
         "image": "pics/projects_publications/ivc_prune.jpg",
         "authors": "Zhichao Sun, Yidong Ma, Gang Liu, Yibo Chen, Xu Tang, Yao Hu, Yongchao Xu",
         "conference_name": "(ICLR) The International Conference on Learning Representations",
@@ -146,7 +146,7 @@ const publications_data = [
         "title": "InstanceAssemble: Layout-Aware Image Generation via Instance Assembling Attention",
         "image": "pics/projects_publications/instance_assemble.jpeg",
         "authors": "Qiang Xiang, Shuang Sun, Binglei Li, Dejia Song, Huaxia Li, Nemo Chen, Xu Tang, Yao Hu, Junping Zhang",
-        "conference_name": "(NIPS) Conference and Workshop onNeural Information Processing Systems",
+        "conference_name": "(NIPS) Conference and Workshop on Neural Information Processing Systems",
         "arxiv_link": "https://arxiv.org/abs/2509.16691",
         "code_link": "https://github.com/FireRedTeam/InstanceAssemble",
         "demo_link": null
@@ -155,7 +155,7 @@ const publications_data = [
         "title": "CQ-DINO: Mitigating Gradient Dilution via Category Queries for Vast Vocabulary Object Detection",
         "image": "pics/projects_publications/cq_dino.jpg",
         "authors": "Zhichao Sun, Huazhang Hu, Yidong Ma, Gang Liu, Nemo Chen, Xu Tang, Yao Hu, Yongchao Xu ",
-        "conference_name": "(NIPS) Conference and Workshop onNeural Information Processing Systems",
+        "conference_name": "(NIPS) Conference and Workshop on Neural Information Processing Systems",
         "arxiv_link": "https://arxiv.org/abs/2503.18430",
         "code_link": "https://github.com/FireRedTeam/CQ-DINO",
         "demo_link": null
@@ -170,9 +170,9 @@ const publications_data = [
         "demo_link": "https://single-trajectory-distillation.github.io/"
     },
     {
-        "title": "Speaking from coarse to fine: Improving neural codec language model via multi-scale speech coding and generation",
+        "title": "Speaking from Coarse to Fine: Improving Neural Codec Language Model via Multi-Scale Speech Coding and Generation",
         "image": "pics/projects_publications/cofi_speech.jpg",
-        "authors": "HaoHan  Guo, FengLong Xie, Dongchao Yang, Xixin Wu, Helen Meng",
+        "authors": "Haohan  Guo, Fenglong Xie, Dongchao Yang, Xixin Wu, Helen Meng",
         "conference_name": "(ICASSP) IEEE International Conference on Acoustics, Speech and Signal Processing",
         "arxiv_link": "https://arxiv.org/abs/2409.11630",
         "code_link": null,
@@ -206,7 +206,7 @@ const publications_data = [
         "demo_link": null
     },
     {
-        "title": "StoryMaker: Towards consistent characters in text-to-image generation",
+        "title": "StoryMaker: Towards Consistent Characters in Text-to-Image Generation",
         "image": "pics/projects_publications/story_maker.jpg",
         "authors": "Zhengguang Zhou, Jing Li, Huaxia Li, Nemo Chen, Xu Tang",
         "conference_name": "Arxiv",
@@ -215,7 +215,7 @@ const publications_data = [
         "demo_link": ""
     },
     {
-        "title": "Socodec: A semantic-ordered multi-stream speech codec for efficient language model based text-to-speech synthesis",
+        "title": "Socodec: A Semantic-Ordered Multi-Stream Speech Codec for Efficient Language Model Based Text-to-Speech Synthesis",
         "image": "pics/projects_publications/socodec.jpg",
         "authors": "Haohan Guo, Fenglong Xie, Kun Xie, Dongchao Yang, Dake Guo, Xixin Wu, Helen Meng",
         "conference_name": "(SLT) IEEE Spoken Language Technology Workshop",
@@ -224,7 +224,7 @@ const publications_data = [
         "demo_link": "https://hhguo.github.io/DemoSoCodec/"
     },
     {
-        "title": "Addressing index collapse of large-codebook speech tokenizer with dual-decoding product-quantized variational auto-encoder",
+        "title": "Addressing Index Collapse of Large-Codebook Speech Tokenizer with Dual-Decoding Product-Quantized Variational Auto-Encoder",
         "image": "pics/projects_publications/addressing_index.jpg",
         "authors": "Haohan Guo, Fenglong Xie, Dongchao Yang, Hui Lu, Xixin Wu, Helen Meng",
         "conference_name": "(SLT) IEEE Spoken Language Technology Workshop",
@@ -332,7 +332,7 @@ const publications_data = [
         "demo_link": "https://hhguo.github.io/DemoQSTTS"
     },
     {
-        "title": "Tri-stage training with language-specific encoder and bilingual acoustic learner for code-switching speech recognition",
+        "title": "Tri-Stage Training with Language-Specific Encoder and Bilingual Acoustic Learner for Code-Switching Speech Recognition",
         "image": "pics/projects_publications/tristage_training.jpg",
         "authors": "Xuefei Wang, Yuan Jin, Fenglong Xie, Yanhua Long",
         "conference_name": "Applied Acoustics",
@@ -359,7 +359,7 @@ const publications_data = [
         "demo_link": "https://chenkeyan.top/OvarNet/"
     },
     {
-        "title": "MSMC-TTS: Multi-stage multi-codebook VQ-VAE based neural TTS",
+        "title": "MSMC-TTS: Multi-Stage Multi-Codebook VQ-VAE Based Neural TTS",
         "image": "pics/projects_publications/msmc_tts.jpg",
         "authors": "Haohan Guo, Fenglong Xie, Xixin Wu, Frank K Soong, Helen Meng",
         "conference_name": "(TASLP) IEEE/ACM Transactions on Audio, Speech, and Language Processing",
