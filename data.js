@@ -1,5 +1,13 @@
 const opensource_projects_data = [
     {
+        "title": "OpenStoryline: An Agentic Framework for Autonomous, Human-Aligned Video Creation",
+        "image": "pics/projects_publications/openstoryline.jpg",
+        "authors": "Qiwei Yang, Jincheng Liao, Sijie Xu, Xin Zhou, Liyao Rong, Boxiang Zhou, Fengyuan Zhang, Yibo Chen, Dejia Song, Xu Tang, Yao Hu",
+        "arxiv_link": null,
+        "code_link": "https://github.com/FireRedTeam/FireRed-OpenStoryline",
+        "demo_link": "https://fireredteam.github.io/demos/firered_openstoryline"
+    },
+    {
         "title": "FireRedChat: A Fully Self-Hosted Solution for Full-Duplex Voice Interaction",
         "image": "pics/projects_publications/fireredchat.jpg",
         "authors": "Junjie Chen, Yao Hu, Junjie Li, Kangyue Li, Kun Liu, Wenpeng Li, Xu Li, Ziyuan Li, Feiyu Shen, Xu Tang, Manzhen Wei, Yichen Wu, Fenglong Xie, Kaituo Xu, Kun Xie",
@@ -136,7 +144,7 @@ const publications_data = [
     {
         "title": "DynamicFace: High-Quality and Consistent Face Swapping for Image and Video using Composable 3D Facial Priors",
         "image": "pics/projects_publications/dynamic_face.jpg",
-        "authors": "Runqi Wang,Yang Chen,ijie Xu,Tianyao He,Wei Zhu,Dejia Song,Nemo Chen,Xu Tang,Yao Hu",
+        "authors": "Runqi Wang,Yang Chen,Sijie Xu,Tianyao He,Wei Zhu,Dejia Song,Nemo Chen,Xu Tang,Yao Hu",
         "conference_name": "(ICCV) IEEE InternationalConference on Computer Vision",
         "arxiv_link": "https://arxiv.org/abs/2501.08553",
         "code_link": null,
