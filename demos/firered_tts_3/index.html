@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="FireRedTTS3: Unified Speech Generation and Editing">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+  <link href="css/demo.css" rel="stylesheet">
+  <title>FireRedTTS3: Unified Speech Generation and Editing</title>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="section-card">
+    <div class="text-center">
+      <h1 class="page-title">FireRedTTS3: Unified Speech Generation and Editing with Semantically Enriched Speech Representations</h1>
+      <div class="doc-links mt-2">
+        [<a href="https://arxiv.org/abs/2509.02020v1" target="_blank">Paper</a>]
+        [<a href="https://github.com/FireRedTeam/FireRedTTS3" target="_blank">Code</a>]
+      </div>
+      <p class="fst-italic mt-2 mb-1">FireRed Team</p>
+    </div>
+    <p class="mt-3"><b>Abstract:</b> Recent continuous autoregressive TTS models operate directly on continuous speech representations, preserving rich acoustic details while leveraging the instruction-following capabilities of text LLMs. This paradigm opens new possibilities for voice cloning, instruction-controlled voice design, and speech editing, but remains susceptible to error accumulation during autoregressive generation. Existing solutions often require additional semantic modules, multi-stage tokenizer training pipelines, or complex autoregressive architectures. In this work, we propose FireRedTTS3, a simple yet effective speech generation and editing framework that mitigates error accumulation at the representation level. Specifically, we leverage a frozen Audio Encoder trained on diverse speech understanding tasks as a semantic teacher to regularize the audio feature space. This improves text-speech alignment and stabilizes autoregressive generation while keeping the overall system simple. FireRedTTS3 provides two variants: FireRedTTS3-Base for multilingual and multi-dialect zero-shot voice cloning, and FireRedTTS3-Instruct for unified voice cloning, instruction-controlled voice design, and speech editing. Experiments show that FireRedTTS3-Base achieves the best average speech intelligibility and speaker similarity among compared systems on Seed-TTS-Eval and MiniMax-MLS-Test, while FireRedTTS3-Instruct outperforms competing systems on InstructTTSEval and Ming-Freeform-Audio-Edit. These results demonstrate that semantically enriched continuous speech representations, combined with a simple architecture, enable stable, controllable, and high-fidelity speech generation and editing.
+    </p>
+    <figure class="arch-figure my-3">
+      <img class="arch-img" src="pics/fireredtts3_arch.png" alt="FireRedTTS3 architecture">
+      <figcaption>Figure 1: An overview of FireRedTTS3, including (a) the RedAE Tokenizer with semantic supervision, (b) FireRedTTS3-Base for multilingual and multi-dialect voice cloning, and (c) FireRedTTS3-Instruct for voice cloning, instruction-controlled voice design, and speech editing. </figcaption>
+    </figure>
+    <p><b>Main contributions:</b></p>
+    <ol style="line-height:1.75">
+      <li><b>Semantically enriched continuous representations.</b> We introduce RedAE, a continuous speech tokenizer that incorporates semantic supervision from a frozen Audio Encoder pretrained on diverse speech understanding tasks. This design injects semantic information into the latent space without additional semantic modules or multi-stage tokenizer training. The resulting representations stabilize downstream LLM-DiT modeling, enabling FireRedTTS3 to maintain a simple autoregressive architecture.</li>
+      <li><b>Robust multilingual and multi-dialect voice cloning.</b> FireRedTTS3-Base enables zero-shot voice cloning across 24 languages and 21 Chinese dialects. It achieves the best average speech intelligibility and speaker similarity among the compared systems on both Seed-TTS-Eval and MiniMax-MLS-Test benchmarks.</li>
+      <li><b>Unified instruction-controlled speech generation and editing.</b> FireRedTTS3-Instruct unifies zero-shot voice cloning, instruction-controlled voice design, and instruction-controlled speech editing within a single model. It achieves the best performance on InstructTTSEval and Ming-Freeform-Audio-Edit, highlighting its potential as a unified framework for instruction-based speech generation and manipulation.</li>
+    </ol>
+    <p class="mt-3"><b>Contents</b></p>
+    <ul>
+      <li><a href="#zero-shot">Zero-shot Voice Cloning</a></li>
+      <li><a href="#multilingual">Multi-lingual Voice Generation</a></li>
+      <li><a href="#dialect">Chinese Dialects</a></li>
+      <li><a href="#voice-design">Voice Design</a></li>
+      <li><a href="#voice-editing">Voice Editing</a></li>
+    </ul>
+    <div class="text-center mt-4">
+      <video class="demo-video" controls playsinline preload="metadata">
+        <source src="video/demo_27.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+
+  <div class="section-card" id="zero-shot">
+    <h2>Zero-shot Voice Cloning</h2>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="text-align:center">Language</th>
+            <th style="text-align:center">Prompt Speech</th>
+            <th style="text-align:center">Prompt Text</th>
+            <th style="text-align:center">Target Text</th>
+            <th style="text-align:center">Generated</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td style="text-align:center; vertical-align:middle" rowspan="3">Chinese</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_zh/10003667-00000039.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">自动驾驶将大幅提升出行安全，效率。</td>
+  <td style="text-align:center; max-width:280px">全球每年有超过一百三十五万人，因交通事故而死亡。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_zh/10003667-00000039.wav"/></audio></td>
+</tr>
+<tr>
+  
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_zh/00005174-00000064.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">告诉我们给开发商下了一个强拆通知书。</td>
+  <td style="text-align:center; max-width:280px">对话从差点要阵亡的笨鹅，和不行的笨咪开始。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_zh/00005174-00000064.wav"/></audio></td>
+</tr>
+<tr>
+  
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_zh/00005265-00000014.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">你喜欢爬山的话，可以去崂山，风景超赞。</td>
+  <td style="text-align:center; max-width:280px">不管北京的房价一天，涨多少或者是跌多少。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_zh/00005265-00000014.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; vertical-align:middle" rowspan="3">English</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_en/common_voice_en_25014861-common_voice_en_25014863.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">The resulting wave interference pattern is the basis of diffraction analysis.</td>
+  <td style="text-align:center; max-width:280px">More visible enforcement of traffic regulations on motorists, bicyclists, and pedestrians has commenced.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_en/common_voice_en_25014861-common_voice_en_25014863.wav"/></audio></td>
+</tr>
+<tr>
+  
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_en/common_voice_en_19665909-common_voice_en_19665911.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">The body &quot;pushes&quot; the air down, and the air pushes the body upward.</td>
+  <td style="text-align:center; max-width:280px">Winter afternoons are cool and frequently sunny, but mornings are freezing to frigid.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_en/common_voice_en_19665909-common_voice_en_19665911.wav"/></audio></td>
+</tr>
+<tr>
+  
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/prompt_en/common_voice_en_23618179-common_voice_en_23618180.wav"/></audio></td>
+  <td style="text-align:center; max-width:280px">Payment was deposited into a standard farebox on board the bus.</td>
+  <td style="text-align:center; max-width:280px">With the movie unfinished, the album was instead promoted in conjunction with the tour.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/seed/gen_en/common_voice_en_23618179-common_voice_en_23618180.wav"/></audio></td>
+</tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card" id="multilingual">
+    <h2>Multi-lingual Voice Generation</h2>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm">
+        <thead>
+          <tr>
+            <th style="text-align:center">Language</th>
+            <th style="text-align:center">Prompt Speech</th>
+            <th style="text-align:center">Prompt Text</th>
+            <th style="text-align:center">Target Text</th>
+            <th style="text-align:center">Generated</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td style="text-align:center; white-space:nowrap">Arabic</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_arabic/arabic_female_009.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">تخلصتان من جثة ليلة دامية برميها في الغابة</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">الحصول على فرصة لإجراء مقابلة مع شخص مميز هو أمر مفرح.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_arabic/arabic_female_009.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Cantonese</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_cantonese/cantonese_female_008.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">這些人根本不會想到生活人、乃至四一人對自己本地文化的認同,是足以對抗一切行政命令</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">最近嘅研究顯示，喺大腦發展嘅關鍵期，適當嘅音樂教育可以顯著提升兒童嘅語言能力同埋空間推理能力。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_cantonese/cantonese_female_008.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Chinese</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_chinese/chinese_male_080.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">语音识别是实现人机交互的一种重要途径是自然语言处理的技术环节随着人工智能技术的发展人机交互等大量应用场景存在着流式语音识别的需求</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">本周末将有一场大型文化艺术节在市中心举行，活动包括传统音乐表演、手工艺展示和美食品尝。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_chinese/chinese_male_080.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Czech</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_czech/czech_male_065.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Více než polovinu světové oficiální rozvojové pomoci poskytuje Evropská unie.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Pro vrácení produktu jej prosím zabalte do původního obalu spolu s účtenkou a odešlete na adresu uvedenou na našich webových stránkách.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_czech/czech_male_065.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Dutch</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_dutch/dutch_male_075.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Mensen mogen niet van het internet afgesloten worden zonder gerechtelijke tussenkomst.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">De langste brug van de regio werd gisteren geopend, die twee belangrijke economische gebieden verbindt en de reistijd met maximaal twee uur verkort.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_dutch/dutch_male_075.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">English</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_english/english_male_072.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">ecclesiastical heraldry of the catholic church appeared first in seals nearly all vesica shaped</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Time seemed to slow down as he fell from the bridge, his entire life flashing before his eyes in those few seconds before hitting the water below.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_english/english_male_072.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Finnish</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_finnish/finnish_female_047.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Tänään olimme onnistuneet pelastamaan Uffen Hydruksen kielistä sekä muuttamaan kaiken näkymättömän planeetalan näkyväksi.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Tiedemies omisti elämänsä aikakoneelle, ja satavuotissyntymäpäivänään hän vihdoin onnistui matkustamaan menneisyyteen korjatakseen elämänsä suurimman virheen.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_finnish/finnish_female_047.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">French</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_french/french_male_095.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">L&#x27;analyse intéresse l&#x27;enseignement technique, l&#x27;amélioration de la productivité et la médecine du travail.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">L&#x27;université de la Sorbonne a signé un accord de coopération avec des institutions américaines pour l&#x27;échange d&#x27;étudiants et de chercheurs dans les domaines des sciences et de la technologie.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_french/french_male_095.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">German</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_german/german_male_093.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Der durch Wasser, Kohlensäure und Huminsäuren gelöste Kalk wird wieder in der Höhle abgelagert.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Der hundertjährige Baum in der Mitte des Platzes erfüllt laut lokaler Legende die Wünsche derjenigen, die bei Vollmond eine Münze zwischen seine Wurzeln legen.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_german/german_male_093.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Greek</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_greek/greek_male_067.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Κοίταξε το αδιανό κρεμαστάρι πάνω από τη χρυσή κονσόλα και έβγαλε ένα βαθύ αναστεναχμό.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Για να επιστρέψετε το προϊόν, παρακαλούμε συσκευάστε το στην αρχική του συσκευασία μαζί με την απόδειξη και στείλτε το στη διεύθυνση που αναφέρεται στον ιστότοπό μας.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_greek/greek_male_067.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Hindi</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_hindi/hindi_male_098.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">चमू में कश्मीरी पंडितों का प्रदर्शन विस्थापितों के रजिस्ट्रेशन फिर से खोलने पर गुसा</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">आधुनिक टेलीमेडिसिन प्लेटफॉर्म रोगियों को घर बैठे डॉक्टरों से परामर्श करने की सुविधा प्रदान करते हैं।</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_hindi/hindi_male_098.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Indonesian</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_indonesian/indonesian_female_018.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Bunglon adalah binatang yang dapat bersalin warna sesuai dengan warna alam sekitarnya</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Saat-saat yang penuh ketegangan membuat setiap bab menjadi semakin menarik.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_indonesian/indonesian_female_018.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Italian</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_italian/italian_male_097.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Dalla distillazione sottovuoto si ottengono prodotti pesanti quali gasolio e olio combustibile.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">La giovane pittrice aveva un dono speciale: i suoi dipinti prevedevano eventi futuri, ma nessuno le credeva finché uno dei suoi quadri mostrò la grande inondazione che devastò la città.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_italian/italian_male_097.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Japanese</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_japanese/japanese_male_095.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">議員内閣制と大統領制の違いは、立法府と行政府の関係にある。議員内閣制では、国民から選挙で選ばれた議員が議会を構成し、議会の多数派から首相が指名され、首相が内閣を組織する。</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">植物は光合成によって二酸化炭素を吸収し、酸素を放出するため、地球上の生命にとって不可欠な存在です。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_japanese/japanese_male_095.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Korean</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_korean/korean_male_051.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">밖으로 나간 덕호는 이제야 큰 대문 소리를 찌뻑 내며 쿵쿵하고 중대문을 들어선다</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">이제부터 함께하는 이 소설은 &quot;꿈의 세계로 여행하기&quot;라는 제목입니다.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_korean/korean_male_051.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Polish</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_polish/polish_male_099.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Decyduje kultura biznesu, skłonność do ryzyka oraz praktyczne związki sfery badawczo-rozwojowej z prywatną przedsiębiorczością.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Druk 4D to ewolucja druku 3D, gdzie wydrukowane obiekty mogą zmieniać kształt lub właściwości w odpowiedzi na bodźce zewnętrzne, takie jak temperatura, światło czy wilgotność.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_polish/polish_male_099.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Portuguese</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_portuguese/portuguese_male_098.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Catas, poços retangulares, mineralizados, pás, picaretas, enxadeco, enxada, suruca, peneiras, catação.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Os oceanos absorvem aproximadamente 30% do dióxido de carbono liberado na atmosfera, ajudando a regular o clima global.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_portuguese/portuguese_male_098.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Romanian</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_romanian/romanian_male_052.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Vor exista conferințe de monitorizare, raportare, etc.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">În biblioteca veche se afla o carte misterioasă al cărei conținut se schimba de fiecare dată când era citită, adaptându-se la nevoile și dorințele ascunse ale fiecărui cititor.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_romanian/romanian_male_052.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Russian</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_russian/russian_male_096.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Команды разработчиков внедряли машинное обучение для улучшения пользовательских интерфейсов.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Король переоделся крестьянином и путешествовал по королевству, чтобы понять истинные проблемы своего народа и узнать, почему они недовольны двором.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_russian/russian_male_096.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Spanish</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_spanish/spanish_female_044.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">El Instituto Acton, un Tintag libertario conservador cristiano estadounidense, lleva su nombre.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Mi ordenador está funcionando muy lento últimamente, ¿conoces a alguien que pueda arreglarlo por un precio razonable?</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_spanish/spanish_female_044.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Thai</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_thai/thai_male_074.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">อันนี้ก็ความเชื่อส่วนตัวฮะ ถ้าไม่ร้านร้านผม ผมก็ไม่ว่าอะไร แยกเตาโพธยานคํา</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">เพื่อเปิดใช้งานคุณสมบัติความปลอดภัยเพิ่มเติมในบัญชีของคุณ โปรดยืนยันหมายเลขโทรศัพท์และอีเมลของคุณผ่านหน้าการตั้งค่า</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_thai/thai_male_074.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Turkish</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_turkish/turkish_male_073.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Ve en önemli olarak nitelendirilen açık arttırma usulü ile item satışını sağlayan market sistemi eklendi.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Meteoroloji Genel Müdürlüğü, ülkenin batı kesimlerinde etkili olacak kuvvetli yağış ve fırtına için sarı alarm verdi.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_turkish/turkish_male_073.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Ukrainian</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_ukrainian/ukrainian_male_094.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Здається, що ще ніколи небо не сміялося так призно до створінь.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Космічний корабель приземлився на невідомій планеті, і астронавти були вражені, виявивши структури, які, здавалося, були побудовані розвиненою цивілізацією.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_ukrainian/ukrainian_male_094.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">Vietnamese</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/prompt_vietnamese/vietnamese_male_082.mp3"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Trinh có hỏi thì được biết sông Trai vẫn đang làm ở chỗ cũ.</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">Chính quyền thành phố đã công bố việc triển khai hệ thống giao thông công cộng mới hứa hẹn sẽ giảm thời gian chờ đợi và cải thiện chất lượng dịch vụ.</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/multilingual/gen_vietnamese/vietnamese_male_082.wav"/></audio></td>
+</tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card" id="dialect">
+    <h2>Chinese Dialects</h2>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm">
+        <thead>
+          <tr>
+            <th style="text-align:center">Dialect</th>
+            <th style="text-align:center">Prompt Speech</th>
+            <th style="text-align:center">Prompt Text</th>
+            <th style="text-align:center">Target Text</th>
+            <th style="text-align:center">Generated</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td style="text-align:center; white-space:nowrap">粤语</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/yue_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">沙士嗰阵啊，因为好多人都失业啊嘟嘟嘟嘟嘟嘟嘟啊，跟住佢又冇钱买楼又跳楼嗰啲啊。</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今晚落咗成日雨，出面好凍，你出门记得带返把遮啊。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/yue_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">安徽话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_anhui_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">于吉不行张角一个半调子道士也不行</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_anhui_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">福建话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_fujian_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">关于泉州过二月二的习俗那边们还知道那些吗</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_fujian_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">甘肃话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_gansu_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">现在就是这样的恶性循环</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_gansu_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">贵州话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_guizhou_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">他们就是把饭费</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_guizhou_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">河北话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hebei_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">有幸参与第六次铁路大提速，京沪夕发朝至。</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hebei_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">河南话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_henan_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">动一下就流水汗水直流真让我纠结呀</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_henan_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">湖北话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hubei_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">要说土地开发上海那才叫把土地都开发光了</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hubei_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">湖南话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hunan_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">就就去那下巷子里寻咯但是最推荐的嘞还是福记炸炸炸</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_hunan_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">江西话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_jiangxi_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">不是牛逼，纯粹装逼</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_jiangxi_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">辽宁话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_liaoning_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">女孩儿只有陪他走过女孩儿将永远幸福下去</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_liaoning_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">闽南语</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_minnan_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">我看迄我较爱看诶电影基本上计是迄种，呃破案啊是迄种</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_minnan_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">宁夏话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_ningxia_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">可是和活佛说了见死不救罪大孽重</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_ningxia_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">陕西话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shaanxi_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">像央视今像央视大楼那样的也叫特色</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shaanxi_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">山东话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shandong_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">在大挂车头左后轮下电动车被压扁</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shandong_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">上海话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shanghai_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">呃超负荷搿种运动白天看电脑然后夜到头看手机但是侬讲勿看也勿现实，所以搿也是啧一桩一桩蛮蛮蛮麻烦个事体要</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今朝天气蛮好格，阿拉切好饭一道出去兜兜，顺便买眼小菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shanghai_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">山西话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shanxi_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">锅盖掀开是一盆汤</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_shanxi_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">四川话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_sichuan_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">接下来的夏季成都还会不会再出现如此强降雨</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_sichuan_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">天津话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_tianjin_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">安全行驶一定要牢记，疏忽大意肯定出事故</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_tianjin_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">温州话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_wenzhou_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">觉得这不仅仅是一首歌</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_wenzhou_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">吴语</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_wu_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">崔真实生前否认这一传信要求警方进行调查调 查</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_wu_gen.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="text-align:center; white-space:nowrap">云南话</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_yunnan_prompt.wav"/></audio></td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">二是提高基层党组织从严治党依规治党的水平</td>
+  <td style="text-align:center; max-width:240px; font-size:.9rem">今天天气挺好的，吃完饭咱们出去走走，顺便到菜市场买点新鲜菜。</td>
+  <td style="text-align:center"><audio controls style="width:170px"><source src="audios/dialect/zh_yunnan_gen.wav"/></audio></td>
+</tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card" id="voice-design">
+    <h2>Voice Design</h2>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th style="text-align:center">Instruction</th>
+            <th style="text-align:center">CoT</th>
+            <th style="text-align:center">Text</th>
+            <th style="text-align:center">Generated</th>
+          </tr>
+        </thead>
+        <tbody><tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">性别: 女性童声.
+音高: 典型女童高音.
+语速: 语速舒缓平稳.
+音量: 音量初始轻柔，后趋响亮清晰.
+年龄: 幼年儿童.
+清晰度: 吐字清晰圆润.
+流畅度: 言语流畅自然.
+口音: 标准普通话.
+音色质感: 音色清脆甜美，略带稚气.
+情绪: 由初始沉吟转为坚定自信与向往.
+语调: 起始平缓，后半句语调上扬，强调肯定.
+性格: 天真乐观，富有梦想.</td>
+  <td style="max-width:280px; font-size:.88rem">[性别] 女 [年龄] 儿童 [音高] 中高 [音色质感] 清脆甜美 [音量] 轻 到 响 [口音] 普通话 [情绪] 沉吟 到 坚定自信 [流畅度] 流畅 [语速] 平稳 [清晰度] 清晰 [语调] 陈述 到 抑扬顿挫 [性格] 天真无邪</td>
+  <td style="max-width:240px">刚刚长大了，一定会开飞船的。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/zh_387_APS.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">gender: Female.
+pitch: Very high child-like pitch.
+speed: Rapid and energetic pace throughout.
+volume: Loud and assertive, bordering on shouting.
+age: Young child.
+clarity: Clear and distinct articulation despite the excitement.
+fluency: Fluent with no noticeable hesitations.
+accent: American English.
+texture: Bright and somewhat shrill.
+emotion: Excited, defiant, and assertive.
+tone: Declarative and confrontational.
+personality: Energetic, assertive, and determined.</td>
+  <td style="max-width:280px; font-size:.88rem">[gender] female [age] child [pitch] high [texture] bright [volume] loud [accent] american [emotion] excited [fluency] fluent [speed] fast [clarity] clear [tone] confrontational [personality] assertive</td>
+  <td style="max-width:240px">Over my dead body, this is going to be my breath. And there&#x27;s nothing you can do about it.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/en_865_APS.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">体现标准普通话的发音,带有戏剧化的哭腔,声音略显沙哑且紧张,语调表现出哀伤又充满绝望的恳求感,流露出依赖性强、遇事易慌乱的情感特征。</td>
+  <td style="max-width:280px; font-size:.88rem">[性别] 男 [年龄] 中年 [音高] 中高 [音色质感] 沙哑 [音量] 正常 [口音] 普通话 [情绪] 悲伤 到 绝望 [流畅度] 有停顿 [语速] 慢 [清晰度] 含糊 [语调] 哀怨 [性格] 敏感多疑</td>
+  <td style="max-width:240px">他不行了,都怪我害了他,他就相信您叶老师,您救救他吧。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/zh_0_DSD.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">As if on stage, the animated young adult questions the group&#x27;s unexpected good fortune.</td>
+  <td style="max-width:280px; font-size:.88rem">[gender] female [age] young_adult [pitch] high [texture] bright [volume] normal [accent] american [emotion] surprised [fluency] fluent [speed] fast [clarity] clear [tone] informal [personality] outgoing</td>
+  <td style="max-width:240px">She acted like she was going to wipe down the furniture the minute we left. and she said that my mom won the lottery. Can you believe it is?</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/en_918_RP.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">展示出一位愤怒且急躁的青年女性形象,声音明亮清晰,语速较快,高音区显著提高,言辞直接,充满不耐烦的质问与斥责情绪。</td>
+  <td style="max-width:280px; font-size:.88rem">[性别] 女 [年龄] 青年 [音高] 中高 到 高 [音色质感] 清亮 [音量] 较响 [口音] 普通话 [情绪] 愤怒 [流畅度] 流畅 [语速] 快 [清晰度] 清晰 [语调] 质问 [性格] 强势权威</td>
+  <td style="max-width:240px">你神经病是不是？你闲着没事做全忘脚啊，几百只鸡叫素儿，你家走吧。</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/zh_50_DSD.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">Channel the spirit of a lively ringmaster at a circus, combining booming enthusiasm with moments of charming persuasion.</td>
+  <td style="max-width:280px; font-size:.88rem">[gender] male [age] middle_age [pitch] high [texture] bright [volume] loud [accent] american [emotion] enthusiastic [fluency] fluent [speed] fast [clarity] clear [tone] persuasive [personality] outgoing</td>
+  <td style="max-width:240px">You&#x27;re terrific. Oh, you&#x27;re colossal stupendous. Come on, alley-oop. I gotta wash behind your ears. You ought to be proud. You&#x27;re a success. Look, a peanut. Come on, eat it. Got lots of vitamins.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/en_324_RP.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">像是一位老朋友给你讲一个充满玄机故事的口吻,嗓音浑厚沙哑,有种沉稳自信又略带得意的感觉。</td>
+  <td style="max-width:280px; font-size:.88rem">[性别] 男 [年龄] 中年 [音高] 中低 [音色质感] 浑厚 [音量] 正常 [口音] 普通话, 说书人风格 [情绪] 自信 [流畅度] 流畅 [语速] 平稳 [清晰度] 清晰 [语调] 抑扬顿挫 [性格] 沉稳自信</td>
+  <td style="max-width:240px">这招叫做醉翁提笔, 一真一假</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/zh_36_RP.wav"/></audio></td>
+</tr>
+<tr>
+  <td style="max-width:240px; font-size:.88rem; white-space:pre-wrap">Convey the reflective tone of a historian recounting a sacred tale, letting the deep gravelly voice unfold like ancient echoes.</td>
+  <td style="max-width:280px; font-size:.88rem">[gender] male [age] middle_age [pitch] low [texture] resonant [volume] quiet [accent] american [emotion] contemplative [fluency] fluent [speed] slow [clarity] clear [tone] narrative [personality] thoughtful</td>
+  <td style="max-width:240px">Creek, uh, i come many moons over great mountains through deep rivers to see white clouds.</td>
+  <td style="text-align:center"><audio controls style="width:190px"><source src="audios/voice_design/en_545_RP.wav"/></audio></td>
+</tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card" id="voice-editing">
+    <h2>Speech Editing</h2>
+    
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Semantic Editing - Insert</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Target Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">insert &#x27;简直&#x27; after the character or word at index 8.</td>
+  <td style="max-width:260px; font-size:.88rem">真是个浪漫的邂逅可以说是英雄救美了</td>
+  <td style="max-width:260px; font-size:.88rem">真是个浪漫的邂逅简直可以说是英雄救美了</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_insert_1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/insert_1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">insert &#x27;真正&#x27; before the character or word &#x27;好&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">就有道而正焉可谓好学也已</td>
+  <td style="max-width:260px; font-size:.88rem">就有道而正焉可谓真正好学也已</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_insert_2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/insert_2_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">insert &#x27;clearly&#x27; before the character or word at index 8.</td>
+  <td style="max-width:260px; font-size:.88rem">Its legal status in Trinidad was insufficient to preserve its ecological status.</td>
+  <td style="max-width:260px; font-size:.88rem">Its legal status in Trinidad was insufficient clearly to preserve its ecological status.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_ins_en1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ins_en1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">insert &#x27;successfully&#x27; after the character or word &#x27;profession&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">Previously an attorney Korona left the profession to pursue a career in music.</td>
+  <td style="max-width:260px; font-size:.88rem">Previously an attorney Korona left the profession successfully to pursue a career in music.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_ins_en2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ins_en2_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Semantic Editing - Substitute</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Target Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">substitute &#x27;妈妈&#x27; with &#x27;爸爸&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">我想对于妈妈来说会比任何礼物都要温暖</td>
+  <td style="max-width:260px; font-size:.88rem">我想对于爸爸来说会比任何礼物都要温暖</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sub3.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sub3_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">substitute the characters or words from index 8 to index 10 with &#x27;五万元&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">当时我想等筹齐两万元聘礼就送她妈回家</td>
+  <td style="max-width:260px; font-size:.88rem">当时我想等筹齐五万元聘礼就送她妈回家</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sub_2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sub_2_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">substitute &#x27;get pictures off&#x27; with &#x27;transfer photos from&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">I&#x27;m trying to explain to my mother how to get pictures off her phone.</td>
+  <td style="max-width:260px; font-size:.88rem">I&#x27;m trying to explain to my mother how to transfer photos from her phone.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sub_en1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sub_en1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">substitute the words from index 8 to index 9 with &#x27;could become&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">Considering the growth of human population insects might be the food of the future.</td>
+  <td style="max-width:260px; font-size:.88rem">Considering the growth of human population insects could become the food of the future.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sub_en2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sub_en2_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Semantic Editing - Delete</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Target Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">delete &#x27;比普通的茶叶要&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">花草茶的口味一般比普通的茶叶要苦一些</td>
+  <td style="max-width:260px; font-size:.88rem">花草茶的口味一般苦一些</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_delete1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/delete1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">delete the characters or words from index 11 to index 15.</td>
+  <td style="max-width:260px; font-size:.88rem">我吃了点燕麦片煎鸡蛋还喝了点橙汁</td>
+  <td style="max-width:260px; font-size:.88rem">我吃了点燕麦片煎鸡蛋汁</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_delete_2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/delete_2_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">delete &#x27;times&#x27;.</td>
+  <td style="max-width:260px; font-size:.88rem">The classification of this gibbon has changed several times in the past few years.</td>
+  <td style="max-width:260px; font-size:.88rem">The classification of this gibbon has changed several in the past few years.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_del_en1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/del_en1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">delete the characters or words from index 2 to index 6.</td>
+  <td style="max-width:260px; font-size:.88rem">On the second day the boy climbed to the top of a cliff near the camp</td>
+  <td style="max-width:260px; font-size:.88rem">On climbed to the top of a cliff near the camp</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_del_en2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/del_en2_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Acoustic Editing - Speed</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the speed to 0.5.</td>
+  <td style="max-width:260px; font-size:.88rem">我用胸抵住车把，掌握方向，速度一点也不比别人慢。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sp1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sp1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the speed to 0.7.</td>
+  <td style="max-width:260px; font-size:.88rem">There is a growing body of case law on Bayh-Dole.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sp4.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sp4_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the speed to 1.3.</td>
+  <td style="max-width:260px; font-size:.88rem">Cribb was born near Bristol but moved to London before starting professional fighting.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sp3.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sp3_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the speed to 2.</td>
+  <td style="max-width:260px; font-size:.88rem">切实帮助困难群众解决生产生活中，遇到的困难和问题。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_sp2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/sp2_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Acoustic Editing - Pitch</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">shifts the pitch by 3 steps.</td>
+  <td style="max-width:260px; font-size:.88rem">因为外面有战争，家里又有战争带来的悲伤和匮乏。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_pt1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/pt1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">shifts the pitch by 5 steps.</td>
+  <td style="max-width:260px; font-size:.88rem">自动驾驶将大幅提升出行安全，效率。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_pt2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/pt2_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">shifts the pitch by -1 steps.</td>
+  <td style="max-width:260px; font-size:.88rem">The heart of the campus has a number of historic buildings.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_pt3.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/pt3_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">shifts the pitch by -1 steps.</td>
+  <td style="max-width:260px; font-size:.88rem">Stevenson is also the director of music ministries at Angeles Mesa Presbyterian Church.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_pt4.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/pt4_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="acoustic-editing-module">
+  <h2 class="box-title">Acoustic Editing - Volume</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead><tr>
+  <th style="text-align:center">Instruction</th>
+  <th style="text-align:center">Original Text</th>
+  <th style="text-align:center">Original Audio</th>
+  <th style="text-align:center">Edited Audio</th>
+</tr></thead>
+      <tbody><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the volume to 1.4.</td>
+  <td style="max-width:260px; font-size:.88rem">A woman sits as she shows the designs she has made in the floor.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_vol1.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/vol1_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the volume to 1.6.</td>
+  <td style="max-width:260px; font-size:.88rem">For example, they both consist of predominately older, hence redder, stars.</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_vol2.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/vol2_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the volume to 0.9.</td>
+  <td style="max-width:260px; font-size:.88rem">伏羲的儿孙们看见伏羲捉来了鱼，也都欢欢喜喜跑来问长问短。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_vol3.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/vol3_fireredtts3_instruct.wav"/></audio></td>
+</tr><tr>
+  <td style="max-width:260px; font-size:.88rem">adjusts the volume to 0.3.</td>
+  <td style="max-width:260px; font-size:.88rem">他们还告诉巨人，那座城市里群英荟萃。</td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/ref_vol4.wav"/></audio></td>
+  <td style="text-align:center"><audio controls style="width:200px"><source src="audios/speech_editing/vol4_fireredtts3_instruct.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</div>
+  </div>
+
+  <div class="section-card">
+    <h2 style="text-align:center">Disclaimer</h2>
+    <p>The content provided above is for academic purposes only and is intended to demonstrate technical capabilities. Some examples are sourced from the internet. If any content infringes on your rights, please contact us to request its removal.</p>
+  </div>
+</div>
+</body>
+</html>
