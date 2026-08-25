@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation · Blog Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #fff; color: #1a1a1a; line-height: 1.6;
+    }
+    .page-wrap { max-width: min(1280px, 96vw); margin: 0 auto; padding: 0 1rem 4rem; }
+    .top-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid #eceff3; margin: 0 -1rem 1.5rem; padding: 0 1rem;
+    }
+    .top-nav-inner {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem;
+      padding: .65rem 0; max-width: min(1280px, 96vw); margin: 0 auto;
+    }
+    .top-nav-label {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #dc2626; margin-right: .15rem; white-space: nowrap;
+      cursor: default; pointer-events: none;
+    }
+    .top-nav-divider {
+      width: 1px; height: 18px; background: #e2e8f0; margin: 0 .35rem;
+    }
+    .top-nav-link {
+      display: inline-block; padding: .35rem .75rem; border-radius: 999px;
+      font-size: .8rem; font-weight: 500; color: #475569; text-decoration: none;
+      border: 1px solid #d1d5db; background: #fff; white-space: nowrap;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .top-nav-link:hover { background: #f8fafc; color: #2563eb; border-color: #93c5fd; text-decoration: none; }
+    .top-nav-link.active {
+      background: #eff6ff; color: #2563eb; border-color: #2563eb; font-weight: 600;
+    }
+    @media (max-width: 991px) {
+      .page-wrap { padding: 0 1rem 3rem; }
+      .top-nav { margin: 0 -1rem 1.25rem; padding: 0 1rem; }
+      .top-nav-inner { overflow-x: auto; flex-wrap: nowrap; padding-bottom: .5rem;
+        -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .top-nav-inner::-webkit-scrollbar { display: none; }
+    }
+    .hero-card {
+      background: #fff; border: 1px solid #eceff3; border-radius: 12px;
+      padding: 2rem 2.25rem; margin: 1rem 0 2.5rem;
+      box-shadow: none;
+    }
+    .hero-title { font-size: 1.75rem; font-weight: 700; text-align: center; letter-spacing: -.02em; }
+    .doc-links a { margin: 0 8px; color: #2563eb; }
+    .contributions-list { line-height: 1.75; padding-left: 1.25rem; }
+    .contributions-list li { margin-bottom: .85rem; }
+    .contributions-list li:last-child { margin-bottom: 0; }
+    .arch-grid { display: grid; gap: 1.25rem; margin-top: 1.25rem; }
+    @media (min-width: 900px) { .arch-grid { grid-template-columns: 1fr 1fr; } }
+    .arch-figure { margin: 0; text-align: center; }
+    .arch-img { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #eceff3; }
+    .arch-figure figcaption {
+      margin-top: .65rem; font-size: .88rem; color: #64748b; line-height: 1.65;
+      text-align: left;
+    }
+    .section-card {
+      background: #fff; border: 1px solid #eceff3; border-radius: 12px;
+      padding: 2rem 1.75rem; margin-bottom: 2rem;
+      box-shadow: none;
+    }
+    .category-banner {
+      font-size: 1.35rem; font-weight: 700; text-align: center;
+      margin: 2.75rem 0 1.25rem; color: #0f172a; letter-spacing: -.01em;
+      padding-top: .5rem; border-top: 1px solid #eceff3;
+    }
+    .understanding-intro-video-card { padding: 1.25rem 1.5rem; margin-bottom: 0; }
+    .intro-video-lang-tabs {
+      display: flex; justify-content: center; gap: .5rem; margin-bottom: .85rem;
+    }
+    .intro-video-lang-tab {
+      border: 1px solid #e5e7eb; border-radius: 999px; padding: .45rem 1.1rem;
+      font-size: .86rem; font-weight: 500; background: #fff; color: #374151; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+    .intro-video-lang-tab.active { background: #111827; color: #fff; border-color: #111827; }
+    .understanding-intro-video {
+      width: 100%; display: block; border-radius: 12px; background: #000;
+    }
+    .part-label {
+      display: block; font-size: .72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em; color: #64748b;
+      margin-bottom: .5rem; text-align: center;
+    }
+    .section-lead { color: #64748b; font-size: .95rem; margin: -.15rem 0 1.25rem; text-align: center; max-width: 100%; }
+    .task-title { font-size: 1.2rem; font-weight: 700; margin-bottom: .35rem; text-align: center; }
+
+    /* Blog showcase: video + chat */
+    .blog-showcase { margin-top: .5rem; }
+    .showcase-video {
+      width: 100%; display: block; border-radius: 12px;
+      background: #000; margin-bottom: 1.25rem; aspect-ratio: 16/9; object-fit: cover;
+    }
+    .qa-tabs {
+      display: flex; flex-wrap: wrap; gap: .45rem; justify-content: center;
+      margin: 0 0 1rem; padding: 0;
+    }
+    .qa-tab {
+      border: 1px solid #e5e7eb; border-radius: 999px; padding: .42rem .95rem;
+      font-size: .82rem; font-weight: 500; background: #fff; color: #475569;
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .qa-tab:hover { border-color: #d1d5db; background: #fff; }
+    .qa-tab.active {
+      background: #111827; border-color: #111827; color: #fff;
+      box-shadow: none;
+    }
+    .chat-shell {
+      border: 1px solid #eceff3; border-radius: 12px; background: #fff;
+      overflow: hidden;
+    }
+    .chat-shell-part1 .chat-body {
+      display: flex; flex-direction: column;
+      max-height: min(880px, 86vh);
+    }
+    .chat-shell-part1 .chat-media-pin {
+      flex: 0 0 auto; background: #fff; border-bottom: 1px solid #eceff3;
+      padding: .85rem 1rem; z-index: 2;
+    }
+    .chat-media-pin {
+      flex-shrink: 0; background: #fff; border-bottom: 1px solid #eceff3;
+      padding: .85rem 1rem; z-index: 2;
+    }
+    .showcase-video-in-dialog {
+      width: 100%; height: auto; display: block; border-radius: 10px; background: #000;
+      margin-bottom: .65rem; object-fit: contain;
+      max-height: min(300px, 34vh);
+    }
+    .showcase-video-in-dialog:last-child { margin-bottom: 0; }
+    .showcase-media-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      background: #f0f4ff;
+      border: 1px solid #c7d2fe;
+      color: #1e40af;
+      font-weight: 500;
+      text-decoration: none;
+      word-break: break-word;
+    }
+    .showcase-media-link:hover { background: #e0e7ff; color: #1d4ed8; }
+    .showcase-media-link-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .showcase-media-hint {
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    .media-modal-overlay {
+      position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+      pointer-events: none;
+    }
+    .media-modal-overlay[hidden] { display: none; }
+    .media-modal {
+      pointer-events: auto;
+      width: min(520px, calc(100vw - 2.5rem));
+      height: min(640px, calc(100vh - 2.5rem));
+      background: #fff; border-radius: 14px; overflow: hidden;
+      display: flex; flex-direction: column;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+    }
+    .media-modal-header {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .6rem .9rem; border-bottom: 1px solid #eceff3;
+      font-size: .86rem; color: #334155;
+      cursor: move; user-select: none; touch-action: none;
+    }
+    .media-modal-title {
+      flex: 1; min-width: 0; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .media-modal-open {
+      flex: 0 0 auto; font-size: .8rem; color: #1e40af; text-decoration: none;
+      padding: .25rem .6rem; border: 1px solid #c7d2fe; border-radius: 7px; background: #f0f4ff;
+    }
+    .media-modal-open:hover { background: #e0e7ff; color: #1d4ed8; }
+    .media-modal-close {
+      flex: 0 0 auto; width: 28px; height: 28px; padding: 0;
+      border: 1px solid #e5e7eb; border-radius: 7px; background: #fff;
+      color: #64748b; font-size: 1.05rem; line-height: 1; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .media-modal-close:hover { color: #111827; border-color: #d1d5db; }
+    .media-modal-frame { flex: 1; min-height: 0; width: 100%; border: none; background: #f8fafc; }
+    .media-modal-note {
+      padding: .4rem .9rem; border-top: 1px solid #eceff3;
+      font-size: .76rem; color: #94a3b8;
+    }
+    .chat-media-audio { width: 100%; display: block; }
+    .chat-shell-part1 .chat-window {
+      flex: 1 1 auto; min-height: min(320px, 42vh); max-height: none;
+      overflow-y: auto;
+    }
+    .chat-header {
+      padding: .65rem 1rem; background: #fff; border-bottom: 1px solid #eceff3;
+      font-size: .8rem; color: #64748b; display: flex; align-items: center; gap: .5rem;
+    }
+    .chat-header-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; }
+    .chat-window {
+      max-height: min(520px, 62vh); overflow-y: auto; padding: 1.15rem 1rem 1.25rem;
+      scroll-behavior: smooth;
+    }
+    .chat-window::-webkit-scrollbar { width: 6px; }
+    .chat-window::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .chat-msg { display: flex; gap: .65rem; margin-bottom: 1.1rem; align-items: flex-start; }
+    .chat-msg:last-child { margin-bottom: 0; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-avatar {
+      flex: 0 0 32px; width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 700; color: #fff; text-transform: uppercase;
+    }
+    .chat-msg.user .chat-avatar { background: #6366f1; }
+    .chat-msg.model .chat-avatar { background: #0f172a; }
+    .chat-msg.think .chat-avatar { background: #0f172a; }
+    .chat-bubble {
+      flex: 1; min-width: 0; max-width: calc(100% - 48px);
+      border-radius: 14px; padding: .85rem 1rem; font-size: .92rem; line-height: 1.65;
+    }
+    .chat-msg.user .chat-bubble {
+      background: #eef2ff; border: 1px solid #c7d2fe; color: #1e293b;
+      border-top-right-radius: 4px;
+    }
+    .chat-msg.user .chat-bubble.user-prompt-bubble {
+      position: relative; padding: 2.15rem 1rem .85rem;
+    }
+    .chat-msg.user .user-prompt-md { font-size: .92rem; line-height: 1.65; }
+    .chat-msg.user .user-prompt-md p { margin: 0 0 .75em; }
+    .chat-msg.user .user-prompt-md p:last-child { margin-bottom: 0; }
+    .chat-msg.user .user-prompt-md ul, .chat-msg.user .user-prompt-md ol {
+      margin: 0 0 .75em; padding-left: 1.25rem;
+    }
+    .chat-msg.user .user-prompt-md h1, .chat-msg.user .user-prompt-md h2, .chat-msg.user .user-prompt-md h3 {
+      font-size: .98rem; font-weight: 700; margin: .85em 0 .45em;
+    }
+    .chat-msg.user .user-prompt-md h1:first-child,
+    .chat-msg.user .user-prompt-md h2:first-child,
+    .chat-msg.user .user-prompt-md h3:first-child { margin-top: 0; }
+    .chat-msg.user .user-prompt-md code {
+      background: #fff; padding: .1rem .25rem; border-radius: 4px; font-size: .88em;
+    }
+    .chat-msg.user .user-prompt-md pre {
+      background: #fff; border: 1px solid #c7d2fe; border-radius: 8px;
+      padding: .65rem .75rem; overflow-x: auto; font-size: .82rem; margin: .65em 0;
+    }
+    .chat-msg.user .user-prompt-md pre code {
+      background: #fff; padding: 0; border-radius: 0; border: none;
+    }
+    .prompt-copy-btn {
+      position: absolute; right: .55rem; z-index: 2;
+      width: 28px; height: 28px; padding: 0; border: 1px solid #e5e7eb;
+      border-radius: 7px; background: #fff; color: #64748b;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; opacity: .82; transition: opacity .15s, background .15s, color .15s, border-color .15s;
+    }
+    .prompt-copy-btn:hover { opacity: 1; background: #fff; border-color: #d1d5db; color: #111827; }
+    .prompt-copy-btn.copied { color: #16a34a; border-color: #bbf7d0; background: #fff; }
+    .prompt-copy-btn svg { width: 14px; height: 14px; pointer-events: none; }
+    .prompt-copy-top { top: .55rem; }
+    .chat-msg.model .chat-bubble {
+      background: #f1f5f9; border: 1px solid #cbd5e1; color: #1e293b;
+      border-top-left-radius: 4px;
+    }
+    .chat-msg.think .chat-bubble {
+      background: #fff; border: 1px dashed #d1d5db; color: #64748b;
+      font-style: italic; border-top-left-radius: 4px;
+    }
+    .chat-msg.audio .chat-bubble {
+      background: transparent; border: none; padding: .25rem 0; max-width: 100%;
+    }
+    .chat-bubble .md-body p { margin: 0 0 .85em; }
+    .chat-bubble .md-body p:last-child { margin-bottom: 0; }
+    .chat-bubble .md-body ul, .chat-bubble .md-body ol { margin: 0 0 .85em; padding-left: 1.25rem; }
+    .chat-bubble .md-body li { margin-bottom: .35em; }
+    .chat-bubble .md-body h1, .chat-bubble .md-body h2, .chat-bubble .md-body h3 {
+      font-size: 1rem; font-weight: 700; margin: 1em 0 .5em;
+    }
+    .chat-bubble .md-body h1:first-child, .chat-bubble .md-body h2:first-child { margin-top: 0; }
+    .chat-bubble .md-body blockquote {
+      margin: .65em 0; padding-left: .75rem; border-left: 3px solid #e2e8f0; color: #64748b;
+    }
+    .chat-bubble .md-body code {
+      background: #fff; padding: .1rem .25rem; border-radius: 4px; font-size: .88em;
+    }
+    .chat-bubble .md-body pre {
+      background: #fff; border: 1px solid #cbd5e1; border-radius: 8px;
+      padding: .65rem .75rem; overflow-x: auto; font-size: .84rem; margin: .65em 0;
+    }
+    .chat-bubble .md-body pre code {
+      background: #fff; padding: 0; border-radius: 0; border: none;
+    }
+    .chat-bubble .md-body table {
+      width: 100%; border-collapse: collapse; font-size: .78rem; margin: .65em 0;
+      table-layout: auto;
+    }
+    .chat-bubble .md-body .table-scroll-wrap table {
+      width: max-content; min-width: 100%; margin: 0;
+    }
+    .chat-bubble .md-body table.table-wide {
+      width: max-content; min-width: 100%;
+    }
+    .chat-bubble .md-body th, .chat-bubble .md-body td {
+      border: 1px solid #eceff3; padding: .4rem .5rem; vertical-align: top;
+      min-width: 60px;
+    }
+    .chat-bubble .md-body th {
+      background: transparent; font-weight: 600; position: sticky; top: 0;
+      white-space: nowrap;
+    }
+    .chat-bubble .md-body td {
+      max-width: 280px; white-space: normal; word-break: break-word;
+    }
+    .table-scroll-wrap { overflow-x: auto; margin: .5em 0; border-radius: 0; border: none; -webkit-overflow-scrolling: touch; }
+    .chat-audio { width: 100%; max-width: 420px; display: block; }
+    .chat-case-video {
+      width: 100%; height: auto; display: block; border-radius: 10px; background: #000;
+      object-fit: contain; max-height: min(280px, 32vh);
+    }
+    .think-label {
+      font-size: .72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .05em; color: #94a3b8; margin-bottom: .35rem; font-style: normal;
+    }
+
+    /* Generation (unchanged from original) */
+    .case-tabs { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin: 0 0 1.25rem; }
+    .case-tab {
+      border: 1px solid #e5e7eb; border-radius: 999px; padding: .5rem 1.1rem;
+      font-size: .86rem; font-weight: 500; background: #fff; color: #374151; cursor: pointer;
+    }
+    .case-tab.active { background: #111827; color: #fff; border-color: #111827; }
+    .edit-panels { margin-top: .5rem; }
+    .edit-panel { display: none; }
+    .edit-panel.active { display: block; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: .86rem; table-layout: fixed; }
+    .data-table th, .data-table td {
+      border: 1px solid #eceff3; padding: .6rem .65rem; vertical-align: top;
+      word-wrap: break-word; overflow-wrap: anywhere;
+    }
+    .data-table thead th { background: transparent; text-align: center; }
+    .section-card .table-responsive {
+      overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch;
+    }
+    .vc-table { table-layout: auto; min-width: 100%; }
+    .vc-table td.vc-lang { width: 8%; min-width: 72px; text-align: center; vertical-align: middle; }
+    .vc-table td.vc-text { width: 24%; font-size: .88rem; min-width: 120px; }
+    .vc-table td.vc-audio {
+      width: 14%; min-width: 130px; max-width: 180px; text-align: center;
+      overflow: hidden; padding: .5rem .4rem;
+    }
+    .vc-table td.vc-audio audio {
+      width: 100% !important; max-width: 100%; min-width: 0; display: block; margin: 0 auto;
+    }
+    .edit-table td.instruction { width: 22%; }
+    .edit-table td.transcript { width: 22%; }
+    .edit-table td.audio-cell { width: 18%; text-align: center; }
+    .edit-table td.audio-cell audio { width: 100%; }
+    .vd-table td.vd-instruction { width: 24%; white-space: pre-wrap; font-size: .86rem; }
+    .vd-table td.vd-cot { width: 22%; }
+    .vd-table td.vd-text { width: 24%; }
+    .vd-table td.vd-audio { width: 14%; text-align: center; overflow: hidden; padding: .5rem .4rem; }
+    .vd-table td.vd-audio audio { width: 100% !important; max-width: 100%; min-width: 0; display: block; margin: 0 auto; }
+    .table-responsive { overflow-x: auto; max-width: 100%; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <nav class="top-nav" aria-label="Page sections">
+  <div class="top-nav-inner">
+    <span class="top-nav-label">Understanding</span>
+    <a class="top-nav-link" href="#part1-showcase">Long-form Audio Understanding</a><a class="top-nav-link" href="#summarization">Audio Understanding Across Various Domains</a>
+    <span class="top-nav-divider"></span>
+    <span class="top-nav-label">Generation</span>
+    <a class="top-nav-link" href="#voice-cloning">Voice Cloning</a><a class="top-nav-link" href="#voice-design">Voice Design</a><a class="top-nav-link" href="#speech-editing">Speech Editing</a>
+  </div>
+</nav>
+  <div class="hero-card">
+  <h1 class="hero-title">FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation</h1>
+  <div class="doc-links text-center mt-2">[<a href="https://github.com/FireRedTeam/FireRedAudio" target="_blank">Paper</a>] [<a href="https://github.com/FireRedTeam/FireRedAudio" target="_blank">Code</a>]</div>
+  <p class="text-center fst-italic mt-2 mb-0">FireRed Team</p>
+  <p class="mt-3 mb-0"><b>Abstract:</b> A unified audio model must recognize and understand linguistic, paralinguistic, and environmental information while supporting speech synthesis and editing. A key challenge is representation: understanding favors compact features suited to long-context modeling, whereas speech generation requires reconstructible features that preserve fine-grained acoustic detail. We introduce FireRedAudio, a general-purpose audio language model with a shared 9B-parameter LLM. To the best of our knowledge, it is the first publicly disclosed unified audio-language model to provide separate continuous input representations for understanding and generation within a single trainable autoregressive LLM. Audio to be recognized or analyzed is processed by a dedicated Audio Encoder, while speech inputs for generation use a RedAE-based pathway. The LLM directly generates text or conditions a flow-matching DiT to produce continuous acoustic latents. Through progressive multitask training, FireRedAudio supports ASR and audio understanding, with the latter extending to recordings of up to one hour, as well as zero-shot TTS, Instruct TTS, and semantic and acoustic speech editing. Its structured organization of long-form audio achieves second-level timestamp accuracy. Across comprehensive evaluations, FireRedAudio achieves competitive or leading performance in audio understanding and multilingual ASR, strong content accuracy and speaker preservation in zero-shot TTS, leading instruction following in Instruct TTS, and substantial improvements over Ming-UniAudio-Edit in both semantic and acoustic speech editing. These results demonstrate the viability of decoupled continuous input representations for unifying audio understanding and continuous-latent speech generation in a model of moderate scale.</p>
+  <div class="arch-grid"><figure class="arch-figure">
+  <img class="arch-img" src="assets/FireRedAudio_model.png" alt="Figure 1: Overview of FireRedAudio. Decoupled continuous pathways encode inputs for understanding and generation. The shared LLM produces text or conditions a DiT to generate RedAE latents, which are decoded into waveforms. The inset illustrates the DiT conditioning for one audio step.">
+  <figcaption>Figure 1: Overview of FireRedAudio. Decoupled continuous pathways encode inputs for understanding and generation. The shared LLM produces text or conditions a DiT to generate RedAE latents, which are decoded into waveforms. The inset illustrates the DiT conditioning for one audio step.</figcaption>
+</figure>
+<figure class="arch-figure">
+  <img class="arch-img" src="assets/RedAE_model.png" alt="Figure 2: Architecture and pretraining of RedAE. A frozen teacher Audio Encoder provides high-level supervision, while the trainable autoencoder compresses 50 Hz audio frames into 25 Hz latents and reconstructs the waveform through an iSTFT head. Snowflakes and flames denote frozen and trainable modules, respectively.">
+  <figcaption>Figure 2: Architecture and pretraining of RedAE. A frozen teacher Audio Encoder provides high-level supervision, while the trainable autoencoder compresses 50 Hz audio frames into 25 Hz latents and reconstructs the waveform through an iSTFT head. Snowflakes and flames denote frozen and trainable modules, respectively.</figcaption>
+</figure></div>
+  <div class="contributions mt-4">
+  <p class="mb-2"><b>Our main contributions are summarized as follows:</b></p>
+  <ul class="contributions-list mb-0"><li><b>Decoupled continuous audio input representations.</b> FireRedAudio introduces two input-side continuous representation pathways backed by separate encoders within one trainable autoregressive LLM. To the best of our knowledge, this design has not been reported in prior unified audio-language models. The Audio Encoder pathway serves understanding, whereas the RedAE-Patch pathway serves speech generation; both share the same language backbone without fusing their input representations.</li><li><b>Unified capabilities and comprehensive evaluation.</b> We evaluate FireRedAudio on ASR, audio understanding (MMAU and MMSU), zero-shot TTS (Seed-TTS-Eval), Instruct TTS (InstructTTSEval), and speech editing (Ming-Freeform-Audio-Edit). With a 9B-parameter LLM backbone, FireRedAudio achieves competitive or leading results across these tasks.</li><li><b>Unified controllable speech generation and editing.</b> Through one continuous-latent speech-generation pathway, FireRedAudio supports zero-shot TTS, Instruct TTS with natural-language control over vocal timbre, emotion, speaking rate, and volume, and speech editing of both semantic content and acoustic attributes.</li><li><b>Structured long-form audio organization with second-level timestamp accuracy.</b> FireRedAudio organizes recordings of up to one hour into timestamped entries and demonstrates stable time–content alignment under a one-second boundary tolerance on recordings from 5 to 50 minutes.</li></ul>
+</div>
+</div>
+  <div class="section-card understanding-intro-video-card" data-video-zh="https://huggingface.co/datasets/Jayjay55/demo/resolve/main/zh_audio_compressed.mp4" data-video-en="https://huggingface.co/datasets/Jayjay55/demo/resolve/main/en_audio_compressed.mp4">
+  <div class="intro-video-lang-tabs" role="tablist" aria-label="Demo language">
+    <button type="button" class="intro-video-lang-tab active" role="tab" aria-selected="true" data-lang="zh">中文</button>
+    <button type="button" class="intro-video-lang-tab" role="tab" aria-selected="false" data-lang="en">English</button>
+  </div>
+  <video class="understanding-intro-video" controls playsinline preload="metadata">
+    <source src="https://huggingface.co/datasets/Jayjay55/demo/resolve/main/zh_audio_compressed.mp4" type="video/mp4"/>
+    Your browser does not support the video tag.
+  </video>
+</div>
+  <h2 class="category-banner" id="understanding">Understanding</h2>
+  <div id="part1-root"></div>
+  <div id="sections-root"></div>
+  <h2 class="category-banner" id="generation">Generation</h2><section class="section-card" id="voice-cloning">
+  <h2 class="task-title">Zero-Shot Voice Cloning (In-Context Learning)</h2>
+  <div class="table-responsive">
+    <table class="data-table vc-table">
+      <thead>
+        <tr>
+          <th>Language</th>
+          <th>Prompt Speech</th>
+          <th>Prompt Text</th>
+          <th>Generated Text</th>
+          <th>Generated</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+  <td class="vc-lang" rowspan="3">Chinese</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_zh/00005269-00000095.wav"/></audio></td>
+  <td class="vc-text">同时，他强调微调要科学有序。</td>
+  <td class="vc-text">安徽淮南秦师傅发现，停在小区的爱车右前驾驶窗玻璃被砸。</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_zh/00005269-00000095.wav"/></audio></td>
+</tr><tr>
+  
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_zh/10003253-00000011.wav"/></audio></td>
+  <td class="vc-text">产业互联网时代，面临很多安全挑战。</td>
+  <td class="vc-text">自动驾驶将大幅提升出出行安全，效率。</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_zh/10003253-00000011.wav"/></audio></td>
+</tr><tr>
+  
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_zh/00005120-00000045.wav"/></audio></td>
+  <td class="vc-text">它朝男孩冻红的鼻尖扔了一块冰，男孩立即弯起弓。</td>
+  <td class="vc-text">阳台和窗台附近不要放置矮柜，凳子等可供攀爬的家具。</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_zh/00005120-00000045.wav"/></audio></td>
+</tr><tr>
+  <td class="vc-lang" rowspan="3">English</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_en/common_voice_en_20089981-common_voice_en_20150573.wav"/></audio></td>
+  <td class="vc-text">Each year there is a special on Japanese television and radio featuring her songs.</td>
+  <td class="vc-text">He has dual American and Danish citizenship, since his father is Danish.</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_en/common_voice_en_20089981-common_voice_en_20150573.wav"/></audio></td>
+</tr><tr>
+  
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_en/common_voice_en_27099623-common_voice_en_27099624.wav"/></audio></td>
+  <td class="vc-text">It has five mountain ranges and nineteen peaks.</td>
+  <td class="vc-text">Dempsey became a household name, and he dated and married Hollywood actresses.</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_en/common_voice_en_27099623-common_voice_en_27099624.wav"/></audio></td>
+</tr><tr>
+  
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/prompt_en/common_voice_en_17738848-common_voice_en_17744571.wav"/></audio></td>
+  <td class="vc-text">Might others within your organisation have some inkling as to their desires?</td>
+  <td class="vc-text">For a long time, the city&#x27;s downfall was attributed to its second sacking.</td>
+  <td class="vc-audio"><audio controls style="width:190px"><source src="assets/audios/voice_clone/gen_en/common_voice_en_17738848-common_voice_en_17744571.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</section><section class="section-card" id="voice-design">
+  <h2 class="task-title">Voice Design</h2>
+  <div class="table-responsive">
+    <table class="data-table vd-table">
+      <thead>
+        <tr>
+          <th>Instruction</th>
+          <th>CoT</th>
+          <th>Text</th>
+          <th>Generated</th>
+        </tr>
+      </thead>
+      <tbody><tr>
+  <td class="vd-instruction">使用标准普通话,表现出敏感机警的女童声线,以稚嫩的音色和压低的音量传达,语调带有紧张感地描述事件,语速保持较快,确保整体表达流畅。</td>
+  <td class="vd-cot">[性别] 女 [年龄] 儿童 [音高] 高 [音色质感] 清亮稚嫩 [音量] 较轻 [口音] 普通话 [情绪] 紧张 [流畅度] 流畅 [语速] 快 [清晰度] 清晰 [语调] 陈述 [性格] 敏感多疑</td>
+  <td class="vd-text">小和叔叔今天反动派在大街码头都增加了港少准，又是要干坏事。</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/zh_242_DSD.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">性别: 男性.
+音高: 男性沉稳中低音.
+语速: 语速舒缓，有自然停顿.
+音量: 正常谈话音量.
+年龄: 中老年男性.
+清晰度: 吐字清晰，发音标准.
+流畅度: 言语连贯，表达自然.
+口音: 标准普通话.
+音色质感: 音质温和，略显沧桑.
+情绪: 饱含不舍与怀念，转为平静嘱托.
+语调: 前段感叹意味，后段请求意味.
+性格: 念旧重情，温和坦诚.</td>
+  <td class="vd-cot">[性别] 男 [年龄] 老年 [音高] 中低 [音色质感] 温暖 [音量] 正常 [口音] 普通话 [情绪] 怀念 到 平静 [流畅度] 流畅 [语速] 慢 [清晰度] 清晰 [语调] 感叹 到 请求 [性格] 温和坦诚</td>
+  <td class="vd-text">这就是天望娃娃送给我的我一直舍不得丢掉它，你替我上交了吧。</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/zh_69_APS.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">以女性高音区的清亮音色,表现出青年阶段的特质,音量略强,语速适中稍快,语调带有解释意味和急切的情感流露,确保语音流畅自然。</td>
+  <td class="vd-cot">[性别] 女 [年龄] 青年 [音高] 中高 [音色质感] 清亮 [音量] 较响 [口音] 普通话 [情绪] 急切 [流畅度] 流畅 [语速] 快 [清晰度] 清晰 [语调] 陈述 [性格] 外向开朗</td>
+  <td class="vd-text">是我请他来的，可他什么也不知道，他来只是想打听一下，你们厂是不是有旧锅炉？</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/zh_71_DSD.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">在讲述悲惨事件的关键点时,声音充满戏剧性与焦急,句尾情绪逐渐激昂。</td>
+  <td class="vd-cot">[性别] 男 [年龄] 中年 [音高] 中 到 高 [音色质感] 清亮 [音量] 正常 到 响 [口音] 普通话 [情绪] 焦急 到 愤怒 [流畅度] 流畅 [语速] 快 [清晰度] 清晰 [语调] 抑扬顿挫 [性格] 果敢决断</td>
+  <td class="vd-text">国内都罢工了，在家里很安全，可在这儿却送了命。</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/zh_201_RP.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">Let emotion drive the speech with rapid escalation in both pace and volume, embodying intense anger followed by profound disappointment. Articulate distinctly, even at heightened speeds, and drop the pitch slightly with exasperation as the delivery concludes.</td>
+  <td class="vd-cot">[gender] male [age] middle_age [pitch] medium_low to low [texture] raspy [volume] loud to quiet [accent] american [emotion] angry to disappointed [fluency] fluent [speed] fast to slow [clarity] clear [tone] confrontational to resigned [personality] assertive</td>
+  <td class="vd-text">I have the attitude problem. Nah, brother, nah. You got the attitude problem, okay? I gave my heart and my soul to this damn company, and this is how you repay me? And on my birthday.</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/en_15_DSD.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">Give it a dynamic tour as if you&#x27;re a cheerful cartoon character with a mid-to-high pitch broadcasting lively, fast-paced thoughts.</td>
+  <td class="vd-cot">[gender] male [age] middle_age [pitch] medium_low to high [texture] nasal [volume] loud [accent] american [emotion] enthusiastic [fluency] fluent [speed] fast [clarity] clear [tone] performative [personality] outgoing</td>
+  <td class="vd-text">Hello, everybody. Welcome to the show. My name is Ryan Seacrest, and on behalf of the show&#x27;s producers, could I just thank you all for the calls, the letters, and the threats telling us exactly how you felt about Jennifer Hudson&#x27;s departure. Especially... Hey! Like, I did it! I didn&#x27;t do it! My man Wayne Dooney from Idaho, his suggestion was to put my mic stand... Well, I can&#x27;t tell you where.</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/en_769_RP.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">Incorporate an accent reminiscent of British English, perhaps with a regional flavor such as Cockney, and convey a sense of emotional vulnerability through a voice that reflects sadness and an overwhelming demeanor, punctuated by a tremor.</td>
+  <td class="vd-cot">[gender] female [age] middle_age [pitch] medium_low to high [texture] breathy [volume] quiet [accent] british [emotion] sad [fluency] influent [speed] slow [clarity] clear [tone] melancholic [personality] vulnerable</td>
+  <td class="vd-text">I get these headaches, sharp pains through me head, milady. Everything seems to be on top of me and I can&#x27;t stop crying. I lie awake thinking about that poor dead girl.</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/en_807_DSD.wav"/></audio></td>
+</tr><tr>
+  <td class="vd-instruction">gender: Female.
+pitch: High female pitch, ascending with expressed exasperation.
+speed: Rapid speaking pace, accelerating as frustration builds.
+volume: Begins at a conversational level, escalating to a louder, emphatic delivery.
+age: Young adult.
+clarity: Clear articulation, with words remaining distinct despite the quick pace.
+fluency: Fluent delivery with a smooth and continuous flow of words.
+accent: American English.
+texture: Bright vocal quality, becoming slightly strained under emotional stress.
+emotion: Evident annoyance and lingering resentment, intensifying to clear frustration.
+tone: Accusatory and indignant, conveying a sense of having been wronged.
+personality: Expressive and assertive in voicing discontent.</td>
+  <td class="vd-cot">[gender] female [age] middle_age [pitch] medium_high to high [texture] clear [volume] quiet to loud [accent] american [emotion] anxious to frustrated [fluency] fluent [speed] moderate to fast [clarity] clear [tone] accusatory [personality] assertive</td>
+  <td class="vd-text">It doesn&#x27;t change the fact that when I was a kid, you always made me feel like the annoying tag long little sister that nobody wanted.</td>
+  <td class="vd-audio"><audio controls style="width:190px"><source src="assets/audios/voice_design/en_857_APS.wav"/></audio></td>
+</tr></tbody>
+    </table>
+  </div>
+</section><section class="section-card" id="speech-editing"><h2 class="task-title">Speech Editing</h2><div class="case-tabs edit-tabs" role="tablist"><button type="button" class="case-tab active" data-i="0">Insert</button><button type="button" class="case-tab" data-i="1">Substitute</button><button type="button" class="case-tab" data-i="2">Delete</button><button type="button" class="case-tab" data-i="3">Speed</button><button type="button" class="case-tab" data-i="4">Pitch</button><button type="button" class="case-tab" data-i="5">Volume</button></div><div class="edit-panels"><div class="edit-panel active" data-i="0" id="edit-insert"><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th><th>Target Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">insert &#x27;简直&#x27; after the character or word at index 8.</td>
+  <td class="transcript">真是个浪漫的邂逅可以说是英雄救美了</td>
+  <td class="transcript">真是个浪漫的邂逅简直可以说是英雄救美了</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_insert_1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/insert_1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">insert &#x27;真正&#x27; before the character or word &#x27;好&#x27;.</td>
+  <td class="transcript">就有道而正焉可谓好学也已</td>
+  <td class="transcript">就有道而正焉可谓真正好学也已</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_insert_2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/insert_2_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">insert &#x27;clearly&#x27; before the character or word at index 8.</td>
+  <td class="transcript">Its legal status in Trinidad was insufficient to preserve its ecological status.</td>
+  <td class="transcript">Its legal status in Trinidad was insufficient clearly to preserve its ecological status.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_ins_en1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ins_en1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">insert &#x27;successfully&#x27; after the character or word &#x27;profession&#x27;.</td>
+  <td class="transcript">Previously an attorney Korona left the profession to pursue a career in music.</td>
+  <td class="transcript">Previously an attorney Korona left the profession successfully to pursue a career in music.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_ins_en2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ins_en2_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div><div class="edit-panel" data-i="1" id="edit-substitute" hidden><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th><th>Target Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">substitute &#x27;妈妈&#x27; with &#x27;爸爸&#x27;.</td>
+  <td class="transcript">我想对于妈妈来说会比任何礼物都要温暖</td>
+  <td class="transcript">我想对于爸爸来说会比任何礼物都要温暖</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sub3.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sub3_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">substitute the characters or words from index 8 to index 10 with &#x27;五万元&#x27;.</td>
+  <td class="transcript">当时我想等筹齐两万元聘礼就送她妈回家</td>
+  <td class="transcript">当时我想等筹齐五万元聘礼就送她妈回家</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sub_2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sub_2_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">substitute &#x27;get pictures off&#x27; with &#x27;transfer photos from&#x27;.</td>
+  <td class="transcript">I&#x27;m trying to explain to my mother how to get pictures off her phone.</td>
+  <td class="transcript">I&#x27;m trying to explain to my mother how to transfer photos from her phone.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sub_en1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sub_en1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">substitute the words from index 8 to index 9 with &#x27;could become&#x27;.</td>
+  <td class="transcript">Considering the growth of human population insects might be the food of the future.</td>
+  <td class="transcript">Considering the growth of human population insects could become the food of the future.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sub_en2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sub_en2_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div><div class="edit-panel" data-i="2" id="edit-delete" hidden><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th><th>Target Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">delete &#x27;比普通的茶叶要&#x27;.</td>
+  <td class="transcript">花草茶的口味一般比普通的茶叶要苦一些</td>
+  <td class="transcript">花草茶的口味一般苦一些</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_delete1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/delete1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">delete &#x27;times&#x27;.</td>
+  <td class="transcript">The classification of this gibbon has changed several times in the past few years.</td>
+  <td class="transcript">The classification of this gibbon has changed several in the past few years.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_del_en1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/del_en1_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div><div class="edit-panel" data-i="3" id="edit-speed" hidden><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">adjusts the speed to 0.5.</td>
+  <td class="transcript">我用胸抵住车把，掌握方向，速度一点也不比别人慢。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sp1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sp1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the speed to 0.7.</td>
+  <td class="transcript">There is a growing body of case law on Bayh-Dole.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sp4.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sp4_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the speed to 1.3.</td>
+  <td class="transcript">Cribb was born near Bristol but moved to London before starting professional fighting.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sp3.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sp3_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the speed to 2.</td>
+  <td class="transcript">切实帮助困难群众解决生产生活中，遇到的困难和问题。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_sp2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/sp2_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div><div class="edit-panel" data-i="4" id="edit-pitch" hidden><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">shifts the pitch by 3 steps.</td>
+  <td class="transcript">因为外面有战争，家里又有战争带来的悲伤和匮乏。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_pt1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/pt1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">shifts the pitch by 5 steps.</td>
+  <td class="transcript">自动驾驶将大幅提升出行安全，效率。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_pt2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/pt2_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">shifts the pitch by -1 steps.</td>
+  <td class="transcript">The heart of the campus has a number of historic buildings.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_pt3.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/pt3_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">shifts the pitch by -1 steps.</td>
+  <td class="transcript">Stevenson is also the director of music ministries at Angeles Mesa Presbyterian Church.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_pt4.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/pt4_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div><div class="edit-panel" data-i="5" id="edit-volume" hidden><table class="data-table edit-table">
+      <thead><tr>
+  <th>Instruction</th><th>Transcription</th>
+  <th>Before Edit</th><th>Speechedit Result</th>
+</tr></thead>
+      <tbody><tr>
+  <td class="instruction">adjusts the volume to 1.4.</td>
+  <td class="transcript">A woman sits as she shows the designs she has made in the floor.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_vol1.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/vol1_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the volume to 1.6.</td>
+  <td class="transcript">For example, they both consist of predominately older, hence redder, stars.</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_vol2.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/vol2_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the volume to 0.9.</td>
+  <td class="transcript">伏羲的儿孙们看见伏羲捉来了鱼，也都欢欢喜喜跑来问长问短。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_vol3.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/vol3_our.wav"/></audio></td>
+</tr><tr>
+  <td class="instruction">adjusts the volume to 0.3.</td>
+  <td class="transcript">他们还告诉巨人，那座城市里群英荟萃。</td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/ref_vol4.wav"/></audio></td>
+  <td class="audio-cell"><audio controls style="width:100%"><source src="assets/audios/speech_editing/vol4_our.wav"/></audio></td>
+</tr></tbody>
+    </table></div></div></section>
+</div>
+<script id="demo-data" type="application/json">{"title": "FireRedAudio: A General-Purpose Audio Language Model with Decoupled Continuous Representations for Understanding and Generation", "long_question_threshold": 180, "part1": {"id": "part1-showcase", "title": "Long-form Audio Understanding", "description": "", "audio_description": "A ~55-minute podcast interview on Li Auto with a host, an owner, and an industry observer.", "video_url": "https://www.xiaoyuzhoufm.com/episode/64e8a92405ad7fa0d979d31c", "video_link_label": "小宇宙 · Vol.42 | 老编辑和理想车主又吵起来了", "cases": [{"id": "417e533c2012", "tab": "Audio Summarization", "tab_zh": "音频总结", "question": "请尽可能详细地总结一下这个音频，涉及到的时间表述统一使用 MM:SS 的格式。", "think_md": "", "output_md": "**A. 全局叙事**\n\n本期音频是一场由主持人引导、两位嘉宾（一位理想车主、一位行业观察者）参与的深度访谈。节目围绕理想汽车展开，从车主的真实使用习惯切入，探讨了增程与纯电的技术路线之争、家庭用车场景下的产品力差异，以及理想汽车精准的用户画像与营销策略。随后，讨论延伸至理想汽车的企业战略、李想的产品定义能力，以及即将推出的纯电MPV MEGA的市场挑战。最后，嘉宾们就新能源汽车行业的长期竞争格局、技术平权趋势及市场终局进行了宏观展望，整体氛围轻松理性，充满了对行业趋势的深刻洞察。\n\n**B. 分段主题与场景**\n\n- **[00:00-01:30] 开场与增程/纯电使用习惯之争** — 主持人介绍嘉宾，车主分享双城通勤经历，透露全程使用纯电模式；主持人调侃理想车主的“幻觉”。\n- **[01:30-05:49] 长途出行场景与舒适性的重新定义** — 双方辩论长途是否必须休息；行业观察者分享春节开理想L8回家800公里的体验。\n- **[05:49-11:30] 理想车主画像：从程序员到“奶爸”的精准匹配** — 车主作为程序员的购车决策；理想精准营销触达高科技行业人群。\n- **[11:30-17:30] 产品体验：驾驶质感与家庭娱乐的平衡** — 车主坦诚L9底盘偏软、过弯有“开船感”；后排屏幕与儿童权限设置。\n- **[17:30-23:30] 空间定义与多车家庭策略** — L7/L8/L9空间布局；多车家庭不同场景策略。\n- **[23:30-29:00] 理想汽车的市场定位与品牌溢价** — 理想如何通过“空间”重新定义豪华；蔚来与理想用户画像对比。\n- **[29:00-35:00] 企业战略与李想的产品定义能力** — 李想结构化思维；理想OTA升级快速响应。\n- **[35:00-41:00] 纯电转型与Mega的市场挑战** — 纯电竞争力与补能网络；Mega的用户接受度挑战。\n- **[41:00-49:50] MEGA的战略意义与品牌向上** — Mega作为品牌向上宣言；验证纯电领域技术能力。\n- **[49:50-54:36] 行业终局与技术平权趋势** — 长周期竞争格局；外观创新与细分功能点。\n\n**C. 说话人与关系**\n\n- **说话人1 (主持人)**：男性，中低音，稳重。善于捕捉矛盾点，通过幽默调侃调节气氛。\n- **说话人2 (行业观察者/嘉宾)**：女性，中高音，知性。提供宏观视角，观点理性富有洞察力。\n- **说话人3 (理想车主/嘉宾)**：男性，中音，语速较快，热情。以第一人称详细描述使用体验。\n\n**D. 主题与情感弧线**\n\n- **核心主题**：理想汽车的产品力、用户画像、营销策略、纯电转型及行业竞争格局。\n- **情感弧线**：开场轻松幽默 → 中段理性辩论 → 后段深度思考与宏观展望 → 结尾轻松期待。\n\n**E. 音乐、音效与环境**\n\n- 室内录音棚环境，背景安静；主要为人声对话，偶有笑声、拍桌声。\n\n**F. 说话风格**\n\n- **主持人**：活跃控场，提问直接，常用幽默语言。\n- **行业观察者**：理性逻辑严密，擅长引用数据和行业案例。\n- **理想车主**：热情真诚，语速较快，常使用个人经历佐证观点。\n", "has_think": false, "render_mode": ""}, {"id": "49acfc08eda5", "tab": "Structured Organization", "tab_zh": "信息表", "question": "听这段音频，输出两张表（字段顺序严格按表头，`\" | \"` 分隔，缺失值写 `\"-\"`）：\n\n## SPEAKERS\n\n按 `speaker_id` 升序即出场顺序；歌手条目 `speaker_id` 以 `singer_` 前缀标识，排在普通说话人之后\n\n```\nspeaker_id | display_name | role | gender | age_range | accent | voice_quality\n```\n\n## TIMELINE\n\n按 `start_time` 升序；`segment_type` 取 `SPEECH` / `EVENT`；EVENT 行除 start/end/segment_type/extra_note/text 外其余列写 `\"-\"`。\n\n```\nsegment_type | start_time | end_time | speaker_id | emotion | intent | dialogue_act | addressee | extra_note | text\n```\n\n### 约定\n\n- 时间格式 **mm:ss.d**（mm 不足两位补 0，秒保留 1 位小数）\n- `speaker_id` 与 SPEAKERS 表一一对应\n- `age_range` 取 child / teen / adult / middle-aged / elderly / unknown\n- `addressee` 取值为 speaker_id（单个或多个用 `,` 分隔）或 `all`，未指向具体人写 `\"-\"`\n- `dialogue_act` 取 statement / question / answer / acknowledge / backchannel / 其它\n- `extra_note` 记录韵律、背景音、笑声等附加信息，无则 `\"-\"`\n- EVENT 行 `text` 写事件描述", "think_md": "", "output_md": "## SPEAKERS\n\n| speaker_id | display_name | role | gender | age_range | accent | voice_quality |\n| --- | --- | --- | --- | --- | --- | --- |\n| 1 | - | 主持人 | male | adult | 普通话 | 中低音，语速较快，逻辑清晰 |\n| 2 | 行业观察者 | 嘉宾（行业观察者） | female | adult | 普通话 | 中高音，语速适中，观点鲜明 |\n| 3 | 理想车主 | 嘉宾（理想车主） | male | adult | 普通话 | 中音，语气诚恳，略带程序员思维 |\n\n## TIMELINE\n\n| segment_type | start_time | end_time | speaker_id | emotion | intent | dialogue_act | addressee | extra_note | text |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| SPEECH | 00:00.0 | 00:09.0 | 1 | 热情 | 节目开场 | statement | all | - | 好，欢迎大家回到车云网的大型车主访谈节目车主Talk，然后这期非常荣幸的请到了两位嘉宾，一位是四号车库的创始人大吉。 |\n| SPEECH | 00:09.0 | 00:09.5 | 2 | 礼貌 | 打招呼 | backchannel | all | - | Hello。 |\n| SPEECH | 00:09.5 | 00:15.0 | 1 | 轻松 | 介绍嘉宾 | statement | all | - | 手手动鼓掌，对，然后另外一位是我的同学，不能算同学，是我学长，比我高一级。 |\n| SPEECH | 00:15.0 | 00:15.5 | 3 | 幽默 | 插话 | backchannel | all | - | 这才对。 |\n| SPEECH | 00:15.5 | 00:29.8 | 1 | 幽默 | 介绍嘉宾背景 | statement | all | - | 对对，老学长，然后比我高一级，我对他的这个最大的印象就是他娶到了我们的班花，对，然后就是是一个非常典型的理想车主，我记得我今天穿的这个这个颜色也像理想销售人员啊，加个L就可以。 |\n| SPEECH | 00:29.8 | 00:33.4 | 3 | 惊喜 | 回应话题 | statement | 1 | - | 哎我还真有一件这样的一个衣服，我老婆买给我的。 |\n| SPEECH | 00:33.4 | 00:34.8 | 1 | 惊讶 | 追问 | question | 3 | - | 噢买给你理想的销售？ |\n| SPEECH | 00:34.8 | 00:35.3 | 2 | 确认 | 插话确认 | backchannel | 3 | - | 真的是理想的衣服吗？ |\n| SPEECH | 00:35.3 | 00:38.2 | 3 | 肯定 | 确认事实 | answer | 1 | - | 真的是理想的衣服，理想商城买的，这里有个L。 |\n| SPEECH | 00:38.2 | 00:38.8 | 1 | 感叹 | 附和 | backchannel | 3 | - | 噢。 |\n| SPEECH | 00:38.8 | 00:42.5 | 2 | 调侃 | 提问 | question | 3 | - | 那今天可惜了没有穿，是是怕担心自己像个销售是吗？ |\n| SPEECH | 00:42.5 | 00:43.2 | 3 | 肯定 | 回答 | answer | 2 | - | 对对对。 |\n| SPEECH | 00:43.2 | 00:52.6 | 1 | 叙述 | 介绍行程 | statement | all | - | 是从工作现场赶回来的，穿越了杭州到上海，他是两双城通勤，然后每天不是每周要开车去杭州，然后开车回上海。 |\n| SPEECH | 00:52.6 | 00:53.0 | 3 | 附和 | 简短回应 | backchannel | 1 | - | 嗯。 |\n| SPEECH | 00:53.0 | 00:57.0 | 1 | 幽默 | 转述趣事 | statement | all | - | 然后刚才在路上还跟我秀，你看电没用完吗？这电真是没用完呀。 |\n| EVENT | 00:55.5 | 00:58.0 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 00:57.0 | 01:03.2 | 2 | 质疑 | 提出观点 | statement | 3 | - | 不是，就上海到杭州的距离，我觉得还用不着理想的那么多电和油。 |\n| SPEECH | 01:03.2 | 01:04.5 | 2 | 追问 | 询问细节 | question | 3 | - | 你是只用纯电模式？ |\n| SPEECH | 01:04.5 | 01:05.2 | 3 | 肯定 | 回答 | answer | 2 | - | 他纯电模式。 |\n| SPEECH | 01:05.2 | 01:06.0 | 1 | 确认 | 重复确认 | backchannel | 3 | - | 对我只用纯电模式。 |\n| SPEECH | 01:06.0 | 01:07.4 | 3 | 推测 | 补充说明 | statement | 3 | - | 最后二十公里肯定是烧油了。 |\n| SPEECH | 01:07.4 | 01:16.3 | 1 | 辩解 | 解释习惯 | statement | 1 | - | 那不一定啊，我要如果从家里出发啊，开那个什么强制纯电，最后可以百分之十的这个距离，剩下的电啊到那个杭州。 |\n| SPEECH | 01:16.3 | 01:29.8 | 3 | 兴奋 | 总结现象 | statement | all | 语速加快/强调 | 你看这这这就是我就引蛇出洞，告诉理想车主真真实的，就是网上的理想车主形象是啊我我我出门用油零焦虑，实际上是开强制纯电一直用纯电，那就是用电呀。 |\n| SPEECH | 01:29.8 | 01:41.3 | 2 | 分析 | 阐述观点 | statement | all | - | 我觉得这不符合就是现在新能源用户的特征嘛，就电动车用户，就是当你用了新能源车之后你就变得特别的抠，所以即使是理想车主也符合一个新能源用户的特征，我先把电用完了再用油。 |\n| SPEECH | 01:41.3 | 02:00.0 | 1 | 深入分析 | 表达观点 | statement | all | - | 对，我觉得这个事情就是同样一个事实，我们都承认这个事实，就是大家一旦用上电就都回不去了，一定要用电，只是说基于这个事实，理想车主的解读是我可以用电也可以用油，但是我只是因为我太我很我很理性我很精明，所以我选择用电，但是对于纯电车主来说，那你全用电不更好吗？ |\n| SPEECH | 02:00.0 | 02:20.6 | 3 | 举例 | 反驳/佐证 | statement | 1 | - | 那那也不太一样，你看啊我春节啊在浙江去玩的时候啊，我可以一天大概开了六百到七百公里，在你们去抢那个充电桩的时候我就纯油，我现在大概提车了一年多，然后所有那个一共开了一万两千公里，只有两千公里是用油的，全部是今年春节的时候去开的。 |\n| SPEECH | 02:20.6 | 02:31.3 | 1 | 调侃 | 总结心理 | statement | all | - | 对，我就说理想车主的一个幻觉嘛，就是我比纯电车主的心理优势，但是真正的纯电车主都有品牌的超充，早就下去充满了，半个小时充了四百公里续航就走了嘛。 |\n| SPEECH | 02:31.3 | 02:39.8 | 2 | 调侃 | 指出立场 | statement | 1 | 伴随笑声 | 你看你现在从第一个问题就带了带了预设立场来来分析的，我我说讲我春节，我就就我我也买了L8。 |\n| SPEECH | 02:39.8 | 02:40.3 | 1 | 附和 | 简短回应 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 02:40.3 | 02:55.6 | 2 | 叙述 | 分享经历 | statement | all | - | 我平时其实正正常上下班代步也是作为一个抠门的电动车车主，其实比较少开理想，觉得费油，但是呢我春节的时候我开理想也是我回家回福州，从上海到福州八百公里左右，就是我想要的就是今天早上我可能我睡睡得不用太早起。 |\n| SPEECH | 02:55.6 | 03:01.6 | 2 | 轻松 | 叙述经历 | statement | all | - | 九、十点钟出发，然后开七个小时回家正好吃晚饭，然后中间我过高速服务区的时候完全不下车。 |\n| SPEECH | 03:01.8 | 03:02.1 | 1 | - | 附和 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 03:02.2 | 03:09.1 | 2 | 满意 | 表达观点 | statement | all | - | 那八百公里我觉得正好，而且甚至我没有加过一趟油。所以这个是我觉得是春节旅途当中我非常满意的一点。 |\n| SPEECH | 03:09.3 | 03:09.7 | 1 | - | 附和 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 03:10.1 | 03:16.0 | 3 | 幽默 | 举例对比 | statement | all | - | 而且啊不只是那个你刚刚说那个什么小鹏车主，我们你知道我们最讽刺的最多都是特斯拉车主。 |\n| SPEECH | 03:16.4 | 03:24.9 | 3 | 调侃 | 描述场景 | statement | all | 语速较快 | 找不到地方的时候呢，从高速提前下去绕到城市里边，顶着那个很贵的那个超充，还有那个什么天价的那种超时费。 |\n| SPEECH | 03:25.0 | 03:25.2 | 1 | - | 惊讶 | backchannel | 3 | - | 啊。 |\n| SPEECH | 03:25.2 | 03:30.5 | 3 | 模仿 | 继续描述 | statement | all | 略带夸张语气 | 下去绕了一圈，还美其名曰我开的太累了，我去里边停车好停，吃个饭，然后回来再上。 |\n| SPEECH | 03:30.5 | 03:34.9 | 1 | 幽默 | 打断/调侃 | question | 3 | 笑声/语调上扬 | 你看他你看他说话是不是有点朗诵腔？像学校里面参加朗诵比赛。 |\n| EVENT | 03:34.9 | 03:35.4 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 03:35.5 | 03:35.9 | 3 | 礼貌 | 回应 | answer | 1 | - | 谢谢。 |\n| SPEECH | 03:36.1 | 03:39.2 | 1 | 认真 | 评论 | statement | 3 | - | 没有，当一个人用这种朗诵腔说话的时候他就不真诚了，我告诉你。 |\n| SPEECH | 03:39.5 | 03:55.7 | 1 | 理性 | 阐述观点 | statement | all | - | 是这样的，就是我觉得开高速这个事情，尤其是全家人出行啊，我我还倒没有说因为我现在还没有孩子嘛，所以没有说像像你们那个那么重的负担，我仅仅是两个人或者带着家长一块出行，我都感觉就是你很难让四个人都稳稳地坐在那里四个小时在高速上。 |\n| SPEECH | 03:55.9 | 04:06.0 | 1 | 坚定 | 论证观点 | statement | all | - | 其实你中间首先第一个一定要休息，第二个是一定要吃饭，就到吃饭点一定要吃饭，所以我我通常觉得这个事情就是是一个伪伪命题，就是你不可能说七八个小时。 |\n| SPEECH | 04:06.6 | 04:08.5 | 1 | 强调 | 补充说明 | statement | all | - | 就是不上厕所，中间不休息。 |\n| SPEECH | 04:08.5 | 04:12.5 | 3 | 反驳 | 提出反例 | question | 1 | 语速快/强调 | 不不不，四个小时你知道为什么吗？那是因为你没有电视和冰箱。 |\n| SPEECH | 04:12.9 | 04:13.4 | 1 | 疑惑 | 追问 | question | 3 | - | 什么意思？ |\n| SPEECH | 04:13.7 | 04:21.8 | 3 | 兴奋 | 解释优势 | statement | 1 | 语调高昂 | 有电视啊，理想车子都有后排电视啊，四个小时我们可以在后边看电影啊，看一个电影之后自然就到下一个城市了呀。 |\n| SPEECH | 04:22.3 | 04:26.9 | 1 | 理性 | 反驳观点 | statement | 3 | - | 是，但是这个跟老人需要去上厕所，小孩需要休息不冲突啊。 |\n| SPEECH | 04:27.2 | 04:36.9 | 1 | 解释 | 细化场景 | statement | all | - | 就他不可能说一直看，他中间总是要有break的时候，我的意思是说就是你们设定那个场景就是说我要一条线八百公里从头开到尾，中间不休息。 |\n| SPEECH | 04:37.0 | 04:38.5 | 2 | 插话 | 提供案例 | statement | 1 | - | 哎，我带了一家人。 |\n| SPEECH | 04:38.6 | 04:38.9 | 1 | - | 附和 | backchannel | 2 | - | 啊。 |\n| SPEECH | 04:38.9 | 04:41.5 | 2 | 叙述 | 讲述经历 | statement | all | - | 就是我春节开回家的时候，我是跟我同事一家人。 |\n| SPEECH | 04:41.5 | 04:41.8 | 1 | - | 附和 | backchannel | 2 | - | 啊。 |\n| SPEECH | 04:41.8 | 04:47.8 | 2 | 叙述 | 补充细节 | statement | all | - | 虽然我自己是没有小孩的，就刚好他们就是呃父母，然后加上一个小孩，然后我们全车四个人。 |\n| SPEECH | 04:48.1 | 04:51.8 | 2 | 叙述 | 讲述过程 | statement | all | - | 然后中间我开八个小时，下去上厕所也下去吃饭。 |\n| SPEECH | 04:52.0 | 04:52.6 | 2 | 犹豫 | 转折 | statement | all | 被打断 | 就是但是呢... |\n| SPEECH | 04:52.6 | 04:55.3 | 1 | 追问 | 确认数据 | question | 2 | 语速快 | 你就说中间加起来的休息时间有没有超过一个小时？ |\n| SPEECH | 04:55.5 | 04:57.2 | 2 | 迟疑 | 回答 | answer | 1 | - | 中间加起来我没有算过。 |\n| SPEECH | 04:57.3 | 04:59.3 | 1 | 引导 | 追问估算 | question | 2 | - | 哎呀你就估计大概感觉一下。 |\n| SPEECH | 04:59.3 | 05:00.3 | 2 | 思考 | 尝试回答 | answer | 1 | - | 我大概感觉... |\n| SPEECH | 05:00.4 | 05:01.7 | 1 | 推测 | 给出判断 | statement | 2 | - | 应该是超过一个小时了吧。 |\n| SPEECH | 05:02.0 | 05:03.7 | 2 | 不确定 | 修正回答 | answer | 1 | - | 我觉得可能差不多。 |\n| SPEECH | 05:03.7 | 05:04.5 | 1 | 确认 | 总结观点 | statement | 2 | - | 对呀，没有到... |\n| SPEECH | 05:04.5 | 05:19.0 | 1 | 深入分析 | 阐述核心逻辑 | statement | all | 语速平稳/逻辑性强 | 这就是我要我我我想表达的观点，就是在一个长途出行，就是我们过去，其实我倒不是否认你们那个冰箱彩电大沙发那一点，我反而是更认为就是当有冰箱彩电大沙发之后，大家对一个旅途当中它的这个体感上的舒适其实要求更高了。 |\n| SPEECH | 05:19.4 | 05:28.6 | 1 | 对比分析 | 解释过去模式 | statement | all | - | 就是它不要求像过去，因为过去是什么，过去燃油车里面大家坐在里面本身是不舒服的嘛，当当本本身坐在车里不舒服，大家要求的是一种极致的通勤效率。 |\n| SPEECH | 05:28.9 | 05:37.4 | 1 | 举例 | 描述极端场景 | statement | all | - | 就是你顶着限速甚至于超百分之十是吧，甚至超百分之二十，开到一百三十，你赶紧给我开到地方，让大家都下来到了景区或者到酒店休息。 |\n| SPEECH | 05:37.8 | 05:49.7 | 1 | 总结 | 得出结论 | statement | all | - | 但现在问题是当新能源车普遍都有冰箱彩电大沙发之后，对吧，就是哪怕没有冰箱，也至少至少有彩电，就是彩电大沙发肯定是标配嘛，对吧，包括比较好的音响。 |\n| SPEECH | 05:49.6 | 05:58.4 | 1 | 理性 | 阐述观点 | statement | all | - | 这样的时候你对旅途的舒适性要求是很高的，一旦你对旅途舒适性要求很高的时候，你其实要求你必须比如说你开个四，而且法律规定你不能开超过四个小时。 |\n| SPEECH | 05:58.8 | 06:06.1 | 1 | 理性 | 举例说明 | statement | all | - | 你四个小时你总是要休息一下的，所以说这个过程当中，尤其是你要舒适的休息，你最好还是有一个目的地，比如说进城里去商圈里插上充。 |\n| SPEECH | 06:06.4 | 06:16.1 | 1 | 轻松 | 个人经历 | statement | all | - | 我每次都是这样，因为我因为我们是同一个高中的嘛，就我每次从我们老家开到北京来，你一定要经过的就是那个郑州的那个岛叫什么岛？就龙子湖上那个岛。 |\n| SPEECH | 06:16.5 | 06:23.0 | 1 | 轻松 | 描述细节 | statement | all | - | 那个岛上就是有小鹏的超充，也有极氪的超充，有好多家的超充，它就正好就在G4高速的，你一下去就在那个地方。 |\n| SPEECH | 06:23.2 | 06:28.5 | 1 | 愉快 | 描述习惯 | statement | all | - | 所以每次我就是开到那个地方恰好就电也差不多了，然后下去吃个饭，然后吃个烩面。 |\n| EVENT | 06:28.6 | 06:29.4 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 06:29.4 | 06:41.1 | 1 | 轻松 | 继续叙述 | statement | all | - | 然后电充上，然后再甚至还可以在里面午休，我是通常会要求午休一下，然后再再一路开到，比如再开可能就开到这个邯郸或者石家庄，那上比如说邯郸它是有小鹏的那个高速上的超充，对吧？ |\n| SPEECH | 06:41.5 | 06:52.2 | 1 | 总结 | 表达观点 | statement | all | - | 就是我觉得基础设施的这个迭代和用户他使用这些新能源车的体验的变化导致了，就是理想所预设那个场景就很快就翻篇了。 |\n| SPEECH | 06:52.9 | 07:06.6 | 2 | 坚定 | 反驳观点 | statement | all | - | 我觉得这不是理想预设的场景，而是大家本来出行需求就是多样化，你今天不可能要求说我今天所有的油车车主，我就必须跟电电车车主一样的出行体验，也不能要求说电车车主或者理想车主他们对出行的目目标是完全一致的。 |\n| SPEECH | 07:06.9 | 07:17.2 | 2 | 举例 | 个人经历 | statement | all | - | 所以那本身大家就是今天我们在做选择的时候，我也不是只有理想L8，那刚才特斯拉车主我最早我19年还买了Model 3，那对吧，特斯拉车主也也帮不到我头上。 |\n| SPEECH | 07:17.5 | 07:23.6 | 2 | 解释 | 说明策略 | statement | all | - | 就做我开特斯拉出门的时候，就是我可能我们因为因为纯电，我可能会为了它去设计一些专门的路线。 |\n| SPEECH | 07:23.6 | 07:23.9 | 1 | 附和 | 表示认同 | backchannel | 2 | - | 对。 |\n| SPEECH | 07:23.9 | 07:39.5 | 2 | 叙述 | 讲述经历 | statement | all | - | 那我也有蔚来，那我开蔚来的时候我中间换电，就是有顺利的时候，偶尔又不顺利也有排队的时候，曾经有一次排队排了可能20分钟，然后换电站出问题了，然后我们被迫去了国网去充，然后国网啊当时蔚来还给我们补了那个券，所以你其实过程是免费充电的。 |\n| SPEECH | 07:39.5 | 07:52.0 | 2 | 分析 | 阐述观点 | statement | all | - | 但是其实当你遇到这种瑕疵和问题的时候，你会发现说其实你出行是非常非常多样性，但是你带了一个立场说OK你们理想今天因为加油了，但我电车其实你明明本来要休息，我其实用纯电能搞定。 |\n| SPEECH | 07:52.3 | 08:02.2 | 2 | 总结 | 表达立场 | statement | all | - | 我觉得我认同这一点，就是纯电车车主今天出行其实也没有那么大的障碍，然后开理想呢他也没有错，就是大家的不同选择而已，就是他本身立场并没有那么对。 |\n| SPEECH | 08:02.2 | 08:09.6 | 1 | 自嘲 | 自我定位 | statement | all | - | 对，而且我是我稍微往回收一下，当然大家可能刚看刚才观点已经发现我是个激进的纯电这个原教旨的纯电爱好者，对。 |\n| SPEECH | 08:09.6 | 08:20.0 | 1 | 严肃 | 提出批评 | statement | all | - | 但是我要强调一点就是纯电到今天为止啊，大部分的纯电车它有一个问题就是它其实还是要求你做规划，就是你的所有体验一定要建立在一个强规划的前提下。 |\n| SPEECH | 08:20.3 | 08:29.3 | 1 | 解释 | 详细说明 | statement | all | - | 就你要看好这一路上大概什么节点你要下，你要去进城去吃饭，你什么点你要充电，我不认可的是说你会进高速那个充电站排队。 |\n| SPEECH | 08:29.3 | 08:41.5 | 1 | 论证 | 逻辑推导 | statement | all | - | 因为我觉得一旦规划你会避开那个流量大的地方，或者说比如说这400公里有八八个甚至十个充电充电站，你总是能提前看一下对吧，每个充电站流量，就是现在的纯电它续航会会让你可以越站。 |\n| SPEECH | 08:42.0 | 08:48.2 | 1 | 犀利 | 指出矛盾 | statement | all | - | 不断的越站，那你会发现理想的车主很多人在特别讨厌的一点是，他嘴上说的是我要加油，但实际上他就在充电。 |\n| SPEECH | 08:48.4 | 08:48.7 | 3 | 附和 | 简短回应 | backchannel | 1 | - | 嗯。 |\n| SPEECH | 08:48.7 | 08:52.6 | 3 | 平静 | 表达观点 | statement | all | - | 他就在这样的，如果是要需要排队的充电呢，我是绝对不会去充的。 |\n| SPEECH | 08:52.6 | 08:55.3 | 1 | 惊讶 | 插话确认 | question | 3 | 语速快/打断 | 哎，你就是实际上高速服务区的... |\n| SPEECH | 08:55.3 | 09:00.3 | 3 | 认真 | 解释原因 | statement | all | 抢话/重叠 | 不不不，因为因为这个可能也说明了一个问题啊，理想的销量呢确实很大。 |\n| SPEECH | 09:00.3 | 09:02.1 | 1 | 赞同 | 附和 | backchannel | 3 | - | 对对对，覆盖的层面是很多的。 |\n| SPEECH | 09:02.1 | 09:16.0 | 3 | 兴奋 | 讲述经历 | statement | all | - | 我可以这么说啊，至少从我去，因为我作为一个理想车主，我不仅关注它，比如说L9当时在发之前啊两三个月我才知道有这这么一款车，我发现哎它所有的设计，所有的诉求跟我的需求是完全... |\n| SPEECH | 09:16.0 | 09:16.5 | 1 | 肯定 | 补充词汇 | backchannel | 3 | 中英混说 | match。 |\n| SPEECH | 09:16.5 | 09:23.1 | 3 | 热情 | 举例对比 | statement | all | - | 完全match，没有一点不match，就比如说尤其当时蔚来我们也看过，什么ES8看完之后我觉得也很漂亮。 |\n| SPEECH | 09:23.1 | 09:23.5 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 09:23.5 | 09:27.0 | 3 | 叙述 | 描述细节 | statement | all | - | 那个尤其我老婆坐完，当时它好像有个什么女王座座位的一样。 |\n| SPEECH | 09:27.0 | 09:27.8 | 2 | 好奇 | 追问确认 | question | 3 | - | 女王副驾？ |\n| SPEECH | 09:27.8 | 09:35.1 | 3 | 感叹 | 描述体验 | statement | all | - | 对，她觉得这副驾哇太棒了，比我那个什么奔驰坐起来舒服多了，为什么没买呢？我一想嗯纯电坚决不买。 |\n| SPEECH | 09:35.1 | 09:41.0 | 3 | 理性 | 阐述逻辑 | statement | all | - | 因为作为一个程序员角度来讲，什么稳定性啊，它是那个当前阶段绝对是第一要务的。 |\n| SPEECH | 09:41.0 | 09:51.4 | 3 | 坚定 | 提出需求 | statement | all | - | 我要求的就是说我愿意，比如说我要跟原来的车打平开六七百公里，我可以在任何条件，任何条件就包含了什么堵车啊，排队这种情况我都要达成。 |\n| SPEECH | 09:51.4 | 10:02.7 | 3 | 分析 | 技术观点 | statement | all | - | 同时啊我觉得啊电池你就算再牛逼，可能400公里啦500公里啦，它怎么着呢都有些缩水都有些老化，那我要是两个途径总比一个途径要稳定。 |\n| SPEECH | 10:02.7 | 10:03.2 | 1 | 好奇 | 追问 | question | 3 | - | 那你后来呢？ |\n| SPEECH | 10:03.2 | 10:10.5 | 3 | 惊喜 | 讲述决策 | statement | all | - | 后来我就是发现有这么一款车，它居然是6月份发布，我觉得太符合了，我想都没想我只要它。 |\n| SPEECH | 10:10.5 | 10:11.0 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 10:11.0 | 10:23.7 | 3 | 详细 | 描述过程 | statement | all | - | 就是我获取这个信息到我最终下单也就是大概两个月左右，中间过程呢我可能就是关注了它不是会有些每阶段的时候它会推送一些信息啊，就是我们每个模块大概是做什么的做什么的。 |\n| SPEECH | 10:23.7 | 10:39.0 | 3 | 赞赏 | 评价营销 | statement | all | - | 因为我我不得不承认啊，理想作为一个营销方面呢，它是有自己的这个实力在里边的，它会以那个解答这个技术的角度把我用到了什么，怎么去做，哪一点做得好，会说的至少从结构化思维上说的是头头是道的。 |\n| SPEECH | 10:39.0 | 10:39.4 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 10:39.4 | 10:57.0 | 3 | 专业 | 技术共鸣 | statement | all | - | 那作为一个车主的角度讲，我又是做技术的，那我觉得它就很match我的点，就在于比如说有没有什么品牌啊，有没有什么其他的一些什么，比如说你们说配件啊，什么空悬啊，什么国产品牌，其实实话实说我从奔驰切到理想的时候，就代表了我对品牌已经完全不在意了。 |\n| SPEECH | 10:57.0 | 10:57.4 | 1 | 肯定 | 附和 | backchannel | 3 | - | 对。 |\n| SPEECH | 10:57.4 | 11:05.2 | 3 | 务实 | 关注质保 | statement | all | - | 只要它在里边，比如说他说噢我有8万什么8万公里多少多少年份的一个质量的一个保证，那我觉得就OK。 |\n| SPEECH | 11:05.2 | 11:09.7 | 1 | 确认 | 补充细节 | statement | 3 | 语速快/重叠 | 就是当时出了出了那个试驾的那个新闻之后他马上就给了那个... |\n| SPEECH | 11:09.7 | 11:24.6 | 3 | 自豪 | 讲述推广 | statement | all | - | 对对，然后最关键的是呢，这么一个行为之后啊，在我订了车的时候，我又把这些我的一个感受发动给我同事，我把我的老板，我的peer，我的下属，现在呢全都推广成了理想车主。 |\n| SPEECH | 11:24.6 | 11:30.5 | 3 | 得意 | 列举成果 | statement | all | - | 而且至少有五六个同事吧，都是我们一起后边就是有L8的有L9的。 |\n| SPEECH | 11:30.5 | 11:31.6 | 1 | 感叹 | 总结评价 | statement | 3 | - | 所以你看理想多可怕。 |\n| SPEECH | 11:31.6 | 11:31.9 | 3 | 肯定 | 附和 | backchannel | 1 | - | 对。 |\n| SPEECH | 11:31.9 | 11:33.8 | 2 | 专业 | 数据分析 | statement | all | - | 这说明推荐转化率非常高。 |\n| SPEECH | 11:33.8 | 11:34.1 | 1 | 思考 | 准备发言 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 11:34.1 | 11:39.1 | 1 | 分析 | 总结核心 | statement | all | - | 对我觉得就是我觉得理想的核心问题在于就是说在整个购车的链路当中，你刚才提到了... |\n| SPEECH | 11:39.1 | 11:41.8 | 3 | 总结 | 强调结论 | statement | all | 被打断/语速快 | 它的产品的认知非常的精准。 |\n| SPEECH | 11:41.8 | 11:55.5 | 3 | 叙述 | 举例说明 | statement | all | - | 这个过程啊还有一个同事啊，最近他其实不是我推广了，只是说我们在一个群里边啊，我们经常聊车，聊到了这些事情之后，他只是抱着试一试的角度上讲，最后也转变自发的转变成理想车主。 |\n| SPEECH | 11:55.5 | 12:05.4 | 3 | 叙述 | 背景介绍 | statement | all | - | 他的故事呢就更曲折了，他之前呢是一个宝马的一个三系运动款的一个车主，而且买了很久了，十几年前就买了，虽然他只是一个三系运动版，他是有一个开赛车的一个梦想在里边的。 |\n| SPEECH | 12:05.4 | 12:16.1 | 3 | 叙述 | 细节描述 | statement | all | - | 举个例子，他会在赛车场上去租一些车，然后或者啊就是比如说在有一些那个特定的一些道路上，以飙车的角度上讲去可能去追求一些运动的快感。 |\n| SPEECH | 12:16.1 | 12:16.4 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 12:16.4 | 12:29.3 | 3 | 设问 | 引出转折 | statement | all | - | 那他为什么是突然转变呢？有一段时间啊，他当然也是互联网行业的从业者啊，他就说呢，突然就是觉得自己已经过了那个年轻的时候了，然后把他三系运动版卖掉的时候还录了一个视频，就意思说。 |\n| SPEECH | 12:29.3 | 12:30.2 | 1 | 幽默 | 接话总结 | statement | 3 | 抢话/重叠 | 告别青春。 |\n| SPEECH | 12:30.2 | 12:34.6 | 3 | 强调 | 确认观点 | statement | all | 重叠/强调 | 告别青春，他的所有的点是在于我跟我的青春告别。 |\n| SPEECH | 12:35.0 | 12:41.4 | 1 | 好奇 | 提出疑问 | question | 3 | - | 我其实好奇一点就是为什么为什么理想车主就是非常坚决的主，就是我认为啊就是他某种意义上是一个陷阱。 |\n| SPEECH | 12:41.4 | 12:47.4 | 1 | 分析 | 阐述观点 | statement | 3 | 中英混说 | 因为但是理想车主就是非常主动的啊说我要family first, everything about family，就这种感觉。 |\n| SPEECH | 12:47.4 | 12:52.6 | 3 | 解释 | 回答问题 | answer | 1 | - | 为什么？因为首先第一点你没有孩子啊，这个就是第一点一个天差地别的一个点。 |\n| SPEECH | 12:52.6 | 13:05.4 | 3 | 论述 | 展开观点 | statement | all | - | 当你有了孩子呢，到了中年之后呢，那你的生活的体验是不一样的，你会发现啊，你看以前不是有个段子啊，说那个什么男人在家的家庭地位对不对？孩子大于什么老人什么什么还有狗对吧？ |\n| SPEECH | 13:05.4 | 13:06.3 | 1 | 补充 | 插话确认 | statement | 3 | 抢话 | 男人最后一名。 |\n| SPEECH | 13:06.3 | 13:14.4 | 3 | 论述 | 继续观点 | statement | all | - | 男人肯定是最后一名，那后边呢你的生活慢慢就变成了家人开心你就开心，家人不开心你再有钱你也不开心。 |\n| SPEECH | 13:14.4 | 13:15.8 | 1 | 打断 | 介入话题 | statement | 3 | 打断 | 哎我我再打断一下，我再打断一下。 |\n| SPEECH | 13:15.8 | 13:16.5 | 2 | 评论 | 简短评价 | statement | 1 | - | 你看典型的。 |\n| SPEECH | 13:16.5 | 13:41.7 | 1 | 分析 | 深度阐述 | statement | 3 | - | 不是我我在讲这个，其实我从这我自己有一个观察，也是从男性在家庭当中的这个地位或者男性在家庭当中的状态去反推这个理想的这个产品的优势上，就是一方面啊就是你说那个正向的，就我要family first，我就所有的价值都我个人的价值要让位于在家庭当中的价值，另外一点其实在中年男性的这种日常的生活当中，他会觉得有的时候他是需要一点个人空间的，这个时候其实理想也是一个挺好的空间。 |\n| SPEECH | 13:41.7 | 13:42.0 | 3 | 附和 | 表示同意 | backchannel | 1 | - | 对。 |\n| SPEECH | 13:42.0 | 13:52.1 | 1 | 体验分享 | 个人经历 | statement | 3 | - | 我之前开了两个星期的理想L九，给我最大的感触其实就是就是我开的时候我是不幸福的，我真的很不幸福，因为第一个就是我说它的一个缺点嘛，就是这车在。 |\n| SPEECH | 13:52.1 | 13:52.9 | 3 | 纠正 | 插话修正 | statement | 1 | 抢话 | 驾驶没体验。 |\n| SPEECH | 13:52.9 | 14:05.8 | 1 | 解释 | 澄清观点 | statement | 3 | - | 拉不是不是没体验，这是负体验，就是它拉不住嘛，当然他们最近不是升级了它的魔毯二点零悬架嘛，之前的核心问题就是晃，真的是太晃了，刹不住，以我过去的驾驶习惯来说，然后但是我会发现当这个车不开的时候。 |\n| SPEECH | 14:06.2 | 14:19.4 | 1 | 描述 | 场景描绘 | statement | all | - | 就是停在地下车库，你不用你先不上楼，你在这里面待一会儿，而且我发现它的那个就是理想L九那个后面那个后视屏嘛，就是这个这个大的娱乐屏，它其实不适合小孩看，因为角度不对，会有点费眼。 |\n| SPEECH | 14:19.4 | 14:32.5 | 1 | 描述 | 场景描绘 | statement | all | - | 但反而大人把那个座椅落到后面，看那个屏幕是最舒服的，就是你正好基本上是一个平视的一个状态，所以那个体验特别好，就是尤其是那个世在世界杯期间对吧，你看个世界杯坐坐在那里面不用打扰家人。 |\n| SPEECH | 14:32.5 | 14:34.2 | 2 | 调侃 | 总结评论 | statement | 1 | - | 就说明你被他们图安利到了。 |\n| SPEECH | 14:34.2 | 14:36.4 | 1 | 承认 | 确认事实 | statement | 2 | - | 对我被我被他们安利到就是说。 |\n| SPEECH | 14:36.4 | 14:41.2 | 2 | 轻松 | 举例说明 | statement | all | 语速适中 | 但其实理想车主就是说我可以在家里看球，这说明你其实已经被他们... |\n| SPEECH | 14:41.2 | 14:57.3 | 3 | 认真 | 阐述观点 | statement | all | 语速较快/逻辑性强 | 对不是，我的意思是说，我的意思是说，就是我不按照理想那个营销链路，就单纯从我个人的体验，我也不是说像刚才徐老师说的我还没有孩子嘛对吧，就是这个体验就就是说在营销之外，其实你也能感受到理想在产品上的有一些过人之处。 |\n| SPEECH | 14:57.3 | 15:08.5 | 3 | 分析 | 对比论证 | statement | all | - | 这是第一点，我第二点就讲的说，理想在整个购买流程过程当中没有摩擦。你发现无论小朋友未来都会有大量的摩擦，就不可能哪个点戳中大家说，我不能买它，就是有否决意见。 |\n| SPEECH | 15:08.9 | 15:12.0 | 3 | 肯定 | 总结观点 | statement | all | - | 就是理想的整个购买链路上没有太多的特别的否决。 |\n| SPEECH | 15:12.0 | 15:25.2 | 1 | 兴奋 | 举例佐证 | statement | all | 语气生动/带笑意 | 肯定没有否决意见，我告诉你我们同事啊，在有段时间内啊，带孩子去商场是远离理想的那个店的。因为他们说过了，那个孩子指着那个屏幕跟我讲，我就要这样的车，不买不走。 |\n| SPEECH | 15:25.2 | 15:30.9 | 1 | 强调 | 确认真实性 | statement | all | - | 这都是不是网上的段子啊，都是真实发生在我们身边的这么一些活生生的例子。 |\n| SPEECH | 15:30.9 | 15:31.3 | 3 | 附和 | 表示认同 | backchannel | 1 | - | 嗯。 |\n| SPEECH | 15:31.6 | 15:41.6 | 1 | 叙述 | 描述过程 | statement | all | - | 后边呢就是说在这个过程中啊，凡是尤其是在试驾之后，你的家人对你的购买全部都是支支持的一个态度，因为他们坐起来呢确实很舒服。 |\n| SPEECH | 15:41.6 | 15:44.7 | 3 | 共鸣 | 分享经历 | statement | 1 | - | 是我也我也遇到这种情况，家里面人坐都会觉得挺好。 |\n| SPEECH | 15:45.1 | 15:46.8 | 1 | 强调 | 重复观点 | statement | 3 | - | 对啊，零反对零反对真的。 |\n| SPEECH | 15:46.8 | 15:47.4 | 3 | 附和 | 确认事实 | backchannel | 1 | - | 零反对。 |\n| SPEECH | 15:47.4 | 15:49.0 | 2 | 补充 | 定义属性 | statement | 3 | - | 因为它本身就是一个功能的车。 |\n| SPEECH | 15:49.0 | 15:49.3 | 3 | 赞同 | 简短回应 | backchannel | 2 | - | 对。 |\n| SPEECH | 15:49.3 | 15:50.6 | 2 | 补充 | 进一步说明 | statement | 3 | - | 满足家庭成员的需求。 |\n| SPEECH | 15:50.6 | 16:08.6 | 3 | 深入 | 探讨驾驶体验 | statement | all | 语速平稳/思考状 | 尤其是你刚刚讲的驾驶体验啊，因为我觉得啊有一说一啊，就是所有的缺点呢都是客观存在，尤其驾驶体验，我一开始坐的开的时候，我的第一感觉是什么？我倒对那个晕车啊颠簸我是没有什么特别的感觉，我甚至觉得啊，我需要的这个车的感觉就是越软越好。 |\n| SPEECH | 16:09.3 | 16:18.4 | 3 | 描述 | 具体感受 | statement | all | - | 但是我觉得它在这个拐弯的时候，确实有大家感觉的那种开船的感觉，就是说我要费一个大的力气才能把这个车这么坐过来。 |\n| SPEECH | 16:18.4 | 16:28.9 | 3 | 叙述 | 习惯养成 | statement | all | - | 但后来啊当那个迅速的从那个驾驶这个体验上呢习惯之后呢，慢慢也就习习惯了，尤其我有段时间啊，我的GLC跟我的那个理想我是换着开的。 |\n| SPEECH | 16:28.9 | 16:29.3 | 1 | 附和 | 表示倾听 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 16:29.3 | 16:38.5 | 3 | 回忆 | 描述幻觉 | statement | all | 略带幽默 | 换着开的过程中呢，我就突然有感觉我有一段时间有种幻觉，我就是还想体验那种驾驶的快乐，尤其是在今年上海的那种疫情期间。 |\n| SPEECH | 16:38.5 | 16:51.9 | 3 | 生动 | 细节描写 | statement | all | 画面感强 | 我可能就是比如说今天开GLC明天开理想，我就会觉得在那个沿路高架上，那个底盘跟那个路路面那个石子摩擦的感觉顺着我的屁股传到了我的身上，能让我清楚知道路面是什么样。 |\n| SPEECH | 16:51.9 | 16:52.2 | 1 | 附和 | 表示理解 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 16:52.2 | 16:56.6 | 3 | 分析 | 操控反馈 | statement | all | - | 以及我可能清楚的方向盘打多少，比如说这个刻度。 |\n| SPEECH | 16:56.6 | 16:57.0 | 1 | 插话 | 术语确认 | question | 3 | 语速快 | 就指向性嘛。 |\n| SPEECH | 16:57.0 | 17:06.5 | 3 | 对比 | 总结差异 | statement | all | - | 然后那个那个车大概能转多少，这个是我在GLC这么一个不运动款的轿车上我能体验出来，但理想我肯定是没有的，我是凭我的... |\n| SPEECH | 17:06.5 | 17:09.9 | 1 | 调侃 | 幽默总结 | statement | 3 | 笑声/轻松 | 对就是你开完理想回到GLC都觉得GLC有操控了。 |\n| SPEECH | 17:09.9 | 17:10.7 | 3 | 大笑 | 认同玩笑 | statement | 1 | 伴随笑声 | 有操控了，对。 |\n| EVENT | 17:10.7 | 17:11.6 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 17:11.6 | 17:21.3 | 3 | 理性 | 回归功能 | statement | all | - | 这个我觉得有一说一肯定是OK的，但是呢就刚说了，在我刚说的功能性的这些事情上来讲呢，我就把它当做一个面包车开又怎么样呢？我觉得没有问题。 |\n| SPEECH | 17:21.3 | 17:32.5 | 1 | 追问 | 询问困扰 | question | 3 | 语速较快 | 是的是的，你就没有什么困扰吗？就除除了这个操控之外，你没有就使用的，包括刚才说屏幕，就有些人确实觉得孩子看这种屏幕不好或者什么的，就是没有就没有什么困扰吗？就你开这么长时间。 |\n| SPEECH | 17:32.7 | 17:33.0 | 3 | 干脆 | 直接回答 | answer | 1 | - | 没有。 |\n| SPEECH | 17:33.2 | 17:33.5 | 1 | 确认 | 再次确认 | question | 3 | - | 没有？ |\n| SPEECH | 17:33.7 | 17:34.0 | 3 | 肯定 | 最终确认 | answer | 1 | - | 对。 |\n| SPEECH | 17:34.1 | 17:51.7 | 3 | 轻松 | 举例说明 | statement | all | - | 因为其实啊实际上角度上讲啊，你在做的这个过程中啊，小孩看电视你也不会跟他一路看，就比如说像我家儿子啊，上车之后呢可能一开始他是不用看的，但是你你时间如果长，你很难小孩很难在车上安安静静的，比如说你待一个小时，这个简直是天使宝宝了。 |\n| SPEECH | 17:51.7 | 17:52.0 | 1 | - | 附和 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 17:52.0 | 17:57.3 | 3 | 叙述 | 描述习惯 | statement | all | - | 比如说待了半个小时之后，我们可能商量一下，可以看两集动画片，那就看两集动画片。 |\n| SPEECH | 17:57.3 | 17:58.0 | 1 | 好奇 | 追问 | question | 3 | - | 看完就关？ |\n| SPEECH | 17:58.0 | 18:00.2 | 3 | 肯定 | 确认事实 | answer | all | - | 其实他很快他就关掉了。 |\n| SPEECH | 18:00.2 | 18:00.5 | 1 | - | 附和 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 18:00.5 | 18:01.2 | 3 | 叙述 | 继续解释 | statement | all | - | 而且那个其实... |\n| SPEECH | 18:01.2 | 18:01.7 | 1 | 好奇 | 追问细节 | question | 3 | - | 谁关的？ |\n| SPEECH | 18:02.3 | 18:25.5 | 3 | 详细解释 | 阐述功能设计 | statement | all | - | 当然是他自己说啊，他说爸爸我不看了，那个我们专门把那个他的所有的功能啊，我觉得都是还是很贴心，比如说我们专门把那个小孩的那个地方那个音区控制给权限给关掉，就是因为如果你不关掉，他马上所有的事情他都会自己操作，因为他现事实上他已经学会了所有的指令，他无非只是没有权限，他不知道为什么他没有权限而已。 |\n| SPEECH | 18:25.5 | 18:25.8 | 1 | - | 附和 | backchannel | 3 | - | 啊。 |\n| SPEECH | 18:25.8 | 18:46.3 | 3 | 满意转遗憾 | 评价车辆并指出缺点 | statement | all | - | 所以呢整体来说啊，这辆车呢肯定是满意的，我现在呢是什么样的，比如说我我的奔驰，我在家里边我只能说每个月我强迫自己嗯开它开出去一次，避免啊电池没电，那我找什么场景开啊？这个不得不又说啊理想啊啊它还是有一个缺点的，就是后备箱太小。 |\n| SPEECH | 18:46.3 | 18:46.9 | 1 | 惊讶 | 表示认同 | backchannel | 3 | - | 哦。 |\n| SPEECH | 18:47.2 | 19:03.0 | 3 | 分析 | 具体说明空间局限 | statement | all | - | 如果你第三排坐人的话呢，这个后备箱呢可能也就是做一些带一些随身的，比如说婴儿车或者是那个一些简单的一些行李箱，比如说想做到什么露营的啊这种设备啊全部都带进去，能让你随车一起走，这可能太难了。 |\n| SPEECH | 19:03.2 | 19:05.0 | 1 | 兴奋 | 表达共鸣 | statement | 3 | 语速加快/情绪高涨 | 对对好好，这说到我的兴奋点了。 |\n| SPEECH | 19:05.0 | 19:05.8 | 2 | 补充 | 引出话题 | statement | 3 | - | 所以才会有Mega。 |\n| SPEECH | 19:05.8 | 19:23.7 | 1 | 热情 | 阐述观点 | statement | all | - | 我的兴奋点就是说就是我为什么一直在微博上，包括自己做节目当中一直强力安利大五座，就是我说真正意义上出行当中的平衡，装载和载人和这个载物的平衡就是大五座。其实最后理想L7的销量也证明了这一点，对吧？确实L7 L7的销量其实已经超过了L8和L9。 |\n| SPEECH | 19:23.7 | 19:23.9 | 3 | - | 附和 | backchannel | 1 | - | 对。 |\n| SPEECH | 19:23.9 | 19:40.8 | 1 | 论证 | 对比车型优劣 | statement | all | - | 就是大五座确实是你真正说全家出行，大家全家出行不是说只是坐坐满，大家就空着就出去了，最好再带上的行李，比如说你要出去露营，对吧？你那个理想那个就是三排六座的这个理想，它有个显著的缺陷，大部分人出去要装东西都是要放倒一个座位，至少放倒一个。 |\n| SPEECH | 19:40.9 | 19:45.1 | 3 | 轻松 | 分享个人方案 | statement | all | - | 很简单啊，我要我住郊区，我要露营我就开奔驰。 |\n| SPEECH | 19:45.1 | 19:45.6 | 1 | 惊讶 | 简短回应 | backchannel | 3 | - | 啊。 |\n| SPEECH | 19:45.6 | 19:47.4 | 3 | 幽默 | 继续方案 | statement | all | 被打断 | 我我要去市区我就开理想。 |\n| SPEECH | 19:47.4 | 19:48.4 | 1 | 果断 | 结束话题 | statement | 3 | 抢话 | 这个问题结束这个问题。 |\n| SPEECH | 19:48.6 | 20:14.9 | 2 | 认真 | 分享购车经历 | statement | all | - | 我也认真想过，因为我去年是因为上海就是插混的那个牌，所以我我我我想买理想的时候，但是去年是没有L7的，但其实我是更适合L7，但是我等到今年我应该是没有牌了，我买不到，所以我去年才很仓促的买了一个L8，买了一个L8我春节开回家之后，因为我家里刚好加上老人，然后小孩家里一共是六个人，然后我带着他们六个人一起出门的时候，我觉得哎很好，就一辆车就装下了，就非常开心。 |\n| SPEECH | 20:14.9 | 20:19.1 | 2 | 分析 | 描述使用场景 | statement | all | - | 但是呢我在上海开的时候，我是用不到六座的，基本上把它当成四座开。 |\n| SPEECH | 20:19.1 | 20:19.6 | 1 | - | 附和 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 20:19.6 | 20:34.2 | 2 | 总结 | 给出建议 | statement | all | - | 所以如果我考虑我在上海的话，我觉得L7就合适，但刚好我日常上下班代步，我有其他的五座车车型，所以我认为它其实是现在的五座六座或者说七座，它其实根据你的家庭成员的结构，大家根据自己的需求去选择的。 |\n| SPEECH | 20:34.2 | 20:34.5 | 1 | - | 附和 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 20:34.5 | 20:34.7 | 2 | - | 语气词 | statement | all | - | 然后呢... |\n| SPEECH | 20:34.7 | 20:42.4 | 2 | 理性 | 提出观点 | statement | all | - | 那你不能因为说我今天是五座或者六座，我同样是一个L7 L8的一个车身上了，你说五座和六座比，五座就更安全。 |\n| SPEECH | 20:42.5 | 21:06.4 | 3 | 赞同 | 展开论述 | statement | all | - | 其实我非常赞同刚才你说的这个观点啊，从我们那个很多的我们的车友群里边，包括我同事的一些现状啊，就是很多人其实买理想六座的车的时候呢，他还真的不只是一辆车，都是有多辆车，比如说以前可能是个轿车，他后来换成了一个六座车，在家里边的时候呢也是根据的情况自己去看，因为这些人你想，他过去他有可能买什么，比如说他可能就买了个MPV了。 |\n| SPEECH | 21:06.5 | 21:06.8 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 21:06.8 | 21:10.8 | 3 | 举例 | 补充说明 | statement | all | - | 或者是比如说像以前奥德赛这种车啊，那个也是很受欢迎的。 |\n| SPEECH | 21:10.9 | 21:11.2 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 21:11.2 | 21:17.4 | 3 | 分析 | 解释原因 | statement | all | - | 那这种情况下呢，其实很多人是受不了什么MPV的一些颜值，或者看起来更加的笨笨的那种感觉。 |\n| SPEECH | 21:17.4 | 21:18.5 | 1 | 插话 | 形象比喻 | statement | 3 | 抢话/重叠 | 太像面包，更像面包。 |\n| SPEECH | 21:18.5 | 21:19.4 | 3 | 确认 | 确认比喻 | statement | all | - | 太像面包了。 |\n| SPEECH | 21:19.4 | 21:19.7 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 对。 |\n| SPEECH | 21:19.7 | 21:30.4 | 3 | 分析 | 阐述优势 | statement | all | - | L9 L8的这种出现呢，恰恰就是弥补了那个我既有这个外观或者说那个呃通用性上一些考虑，又有满足了家人的一个诉求。 |\n| SPEECH | 21:30.5 | 21:50.7 | 3 | 个人经历 | 分享经验 | statement | all | - | 我之前啊我为什么没有把那个奔驰卖掉，很大的一个原因啊也是在于不是我真的需要两辆车，是说我牌照上嘛，我保留我的蓝牌，我有一个那个绿牌，我觉得从这个情况是OK的。另外其实我放两辆车在家里边呢，我确实可以不同的用途啊，后来发现确实不同的用途，开特定的车情况是最好。 |\n| SPEECH | 21:50.8 | 22:54.8 | 1 | 深入分析 | 总结观点 | statement | all | 语速适中/逻辑清晰 | 哎我真的我刚才就说了，你俩共同特点就是你们还有其他的车，因为真正比如说他尤其有多辆车的人来说，理想在他整个拥有的车这三辆或者两辆车当中，它是个更合适的，就是我更主张有多辆车的人把其中一辆车换成理想，而且理想很好一点就在于，当然我有在它的用料上，我对它自诩为豪华品牌不屑一顾嘛，就是他每次说理想说自己豪华品牌，我就想这边豪华品牌没有这么搞，但是确实他通过这他他解决过去豪华品牌一个很大的顽疾是什么呢？就是你会发现最近像奥迪或者大众他们有一个明显的特点就是什么？他们在他们的价格段的中间放了一个大六座车，就比如说奥迪的Q6和和大众揽境，就过去他们是希望尺寸座位数和级别是挂钩的，比如你必须得买到叉七G L G L S，我才给你提供这种大的七座空间，其实理想它是在中间这段，它在中间这段用一个非常可支付的价格给了你一个大，我其实我并不需要说一定要有V6 V8的这个大发动机，一定要内饰要那么豪华，我只是想要这个空间。 |\n| SPEECH | 22:54.8 | 23:06.1 | 3 | 兴奋 | 举例佐证 | statement | all | 伴随笑声 | 我告诉你，你说的非常的对，因为我刚才宝马去换的那个理想那个同事，他自从换了这个理想之后，他每天居然每天发朋友圈夸理想，连我作为一个... |\n| EVENT | 23:05.2 | 23:06.1 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 23:06.1 | 23:39.9 | 3 | 轻松 | 举例说明 | statement | all | 语速较快 | 买的比他早一年的人我都有点受不了，你也不用每天都夸吧，从各种的使用场景，比如说从那个上下班的辅助驾驶，从带家人出去的时候路上那个可以唱KTV都在夸。后来呢他就总结了一个点就在于了，可以用花了一个最少的钱，买到了所有这些功能都有的一个就包括了空间啊，各种家人的功能都有的一辆车。里边的其他的什么品牌呀，就包括你其实讲的什么用料根本就不在意。简单来说在相当长的一段时间内，理想是没有对手的，你没有对手你当然是垄断了。 |\n| SPEECH | 23:40.0 | 24:03.7 | 1 | 理性 | 补充观点 | statement | all | 逻辑清晰 | 嗯，而且我特意说过一点，就是说我之前讲的时候讲过一点，就是在上期讲未来的时候讲了一期是理想的豪华跟未来的豪华是不一样。理想有一点就是说你完全把它当做空间去理解的话，你会更容易接受它。就是说我不管它操控性怎么样，我不管它运动性怎么样，我只是要要求增加了六平米的空间。你就想在上海增加六平米空间需要花多少钱？噢那这个车等于白送，就这么简单的逻辑。 |\n| SPEECH | 24:03.9 | 24:31.5 | 2 | 专业 | 分析行业 | statement | all | 条理分明 | 我觉得空间其实不完全是理想的问题，是现在新能源车电动车出现了之后，它带给这个行业的新的细分市场的定位发生变化的一个非常关键的点。因为今天我们看到大家其实做短悬，然后包括电动车底盘非常平，所以它本身就可以在车的空间上做很多的定位的东西。然后包括现在今天我们智能座舱的一个发展，所以所以它其实是不完全是理想五座六座七座现在这个细分市场的一个问题，它是整个电动车市场都发生了变化。 |\n| SPEECH | 24:31.5 | 25:09.7 | 1 | 肯定 | 深入阐述 | statement | all | 强调重点 | 我觉得但是理想是最早把这个东西用到了一个相对的极致。就是可能很多人发现比如说在电动车上面，因为各种电气化智能化的设备啊可以这么用，可以当个空间去用。但是理想在一开始就把这个东西推到了车上，让你觉得噢我当我想要一个大空间，为家庭想要大空间时我就选理想。就这个标签贴在自己身上足够早。当然今天比如说今天宝骏的云朵你都会觉得对吧，它的空间也很大，而且对还很便宜。对，但是理想我觉得很早把这个，我觉得理想最核心的我对它的从公司或者从产品角度我最能够认同的一点就是它在产品的认知层面做的是很好。 |\n| SPEECH | 25:09.7 | 25:10.5 | 3 | 赞同 | 附和 | backchannel | all | - | 非常成功的。 |\n| SPEECH | 25:10.5 | 25:31.2 | 1 | 分析 | 解释原因 | statement | all | - | 嗯对，这个就是它不会说让用户不知道为什么。我觉得这个也跟你比如说你刚才讲那个呃理想理想的这个产品在你们那个圈层当中的那个传播链式传播，其实跟这个有关，就它最早打动是一一批高科技行业的人群。那这群人呢其实是非常容易接受理想那种产品经理的思路的，就基本上不用解释，不用解释，完全契合。 |\n| SPEECH | 25:31.2 | 25:52.1 | 2 | 反驳 | 提出不同意见 | statement | all | 语气坚定 | 那行业上我有我有不同的意见，因为我们认识我认识的理想车主还挺多的，我觉得行业上其实并不是说聚焦在科技行业，甚至是大家以为新能源车主最早一批是偏向于极客和科技行业，但我不认为是这样的。包括小鹏最早期把G3，G3刚刚开始推的时候，他们认为是互联网公司的码农啊什么他们可能会成为像小鹏车主，但其实不是。 |\n| SPEECH | 25:52.1 | 25:53.2 | 1 | 幽默 | 插话解释 | statement | 2 | 伴随笑声 | 因为它卖太便宜了。 |\n| EVENT | 25:53.2 | 25:54.1 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 25:54.1 | 26:03.8 | 2 | 认同 | 继续阐述 | statement | all | 语速平稳 | 对，啊那确实也有这个问题，你会发现说互联网公司，因为大家在选择车的时候，车是大家不太懂的产品。所以早期优先的这批极客的用户他就 |\n| SPEECH | 26:03.8 | 26:24.6 | 2 | 理性 | 分析用户画像 | statement | all | - | 传统意义上的极客或者说码农群体，他们其实当时买车的时候倾向于BBA。所以像理想我觉得它就是打打中了奶爸群体，这个奶爸群体它有分不同行业，在这个不同行业里面发现有一些人是小企业主，尤其理想或者未来未来车主，小企业主特别多，因为小企业主他们其实在购车上面他更容易去拥抱一些新的东西。 |\n| SPEECH | 26:24.7 | 26:25.0 | 1 | - | 附和 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 26:25.3 | 26:31.6 | 2 | 理性 | 总结观点 | statement | all | - | 就是没有那么强化身身份标签，所以我觉得这个是特征，我并没有觉得它完全聚焦在科技行业上。 |\n| SPEECH | 26:31.7 | 26:37.0 | 1 | 叙述 | 举例佐证 | statement | 2 | - | 我记得我有一次去你们公司楼下，我就看那个停的什么车，我发现真的BBA很少。 |\n| SPEECH | 26:37.1 | 26:37.8 | 3 | 肯定 | 补充信息 | statement | 2 | - | 理想很多。 |\n| SPEECH | 26:38.2 | 27:49.8 | 1 | 深入分析 | 阐述观点 | statement | all | 语速适中/逻辑清晰 | 不，那还还是疫情前第一年的时候，那个时候理想还没有卖这么多，就是就会发现经济车型其实蛮多，就是其实程序员是一个蛮理性的群体，就他们会核心考虑性价比，我哪怕花了二花了二十万十万，我要买个在我理解当中这个价位段性价比，就是其实并不像我们想象哦互联网公司可能大家收入都挺高的，会买很多豪车，你会发现不是，就那个车位上停的其实蛮多经济车型，丰田本田特别多。我觉得理想从另外一个角度来说，它也切中了一个就是说所谓能比较容易接受它这套产品认知的人的一个核心逻辑，就是他也要追求性价比。我觉得这是包括上期我们讲未来的时候，我说未来跟理想的人群的核心的区别其实是在这儿，就哪怕他们最早期都都试图击穿这个互联网高科技，对吧？这个比如说这个愿意尝鲜这这个人群，但是理想走的是性价比路线，就是说我不管是你来看，你媳妇来看，你爹来看，转着绕着车转一圈觉得这车买的很值。但是未来更多的是一种个人的冲动消费，啊就是我那一刻坐在女王副驾上觉得哇，我就今天就是它了，就是我觉得这个冲动消费和性价比其实是他们两者之间的一个很重要的区别。 |\n| SPEECH | 27:49.9 | 28:14.8 | 2 | 反驳/补充 | 提出不同意见 | statement | all | - | 呃，我有一点点不同的意见，我觉得这个行业今天在卖车本质上卖的都是性价比，就像未来推出第一代ES8创始版的时候，我认识非常多的车主，就说我有我同因为当时他们可对比的是特斯拉model x，那我可以用一半的价格去买未来，我为什么要买特斯拉？所以未来早期你会发现说它打中了非常多就是富裕阶层的这种这种有钱的群体，那那这些人他其实对比的是当当年的model s model x。 |\n| SPEECH | 28:14.9 | 28:16.1 | 1 | 追问 | 插话确认 | question | 2 | - | 你要是对比保时捷呢？ |\n| SPEECH | 28:16.2 | 28:41.7 | 2 | 解释 | 继续阐述 | statement | all | - | 所以它价格位不一样，然后所以早期大家觉得未来其实是说堆料，因为它用了非常多好的硬件，因为以以及就是大家会认为说我买这辆车是值回票价了，光买硬件就值回本了，所以你发现最早期用户就特别喜欢说这个事情。但是今天到到今天未来建立了这种服务体系换电体系之后，它其实已经存在了部分的溢价，但是今天这个溢价在今年这个价格战之后又被打回原形。 |\n| SPEECH | 28:41.7 | 28:44.8 | 1 | 总结 | 归纳共识 | statement | all | 语速较快/重叠 | 对对对，就是大家追求不同目标的一个性价比。 |\n| SPEECH | 28:44.8 | 28:51.8 | 3 | 认同 | 延伸观点 | statement | all | - | 对我之前说过哪怕你买保时捷的群体，他也追求的性价比，因为在他的那个价值区间当中，噢这个车是最值的。 |\n| SPEECH | 28:52.2 | 28:53.3 | 1 | 肯定 | 确认观点 | statement | all | - | 对吧？这是肯定的。 |\n| SPEECH | 28:53.4 | 28:58.8 | 1 | 好奇 | 提出新问题 | question | 3 | - | 那我有一个好奇的点在于对于一个一个理想车主，你们会对社交网络上的黑字困扰吗？ |\n| SPEECH | 28:59.1 | 29:00.1 | 3 | 轻松 | 直接回答 | answer | 1 | - | 完全不困扰。 |\n| SPEECH | 29:00.2 | 29:06.6 | 3 | 轻松 | 举例说明 | statement | all | 伴随笑声 | 因为呃基本上啊比如说啊像以前啊还关注你的微博。 |\n| SPEECH | 29:06.6 | 29:07.6 | 1 | 幽默 | 追问 | question | 3 | 伴随笑声 | 啊现在取关了吗？ |\n| SPEECH | 29:07.6 | 29:14.1 | 3 | 幽默 | 解释原因 | statement | all | 伴随笑声/语速快 | 直接取关了，因为取关的点是黑的实实在是太低级了，我都看不下去了。 |\n| SPEECH | 29:14.1 | 29:16.8 | 1 | 调侃 | 确认细节 | question | 3 | 伴随笑声 | 翻来覆去就是那么几个说法是吗？ |\n| SPEECH | 29:16.8 | 29:18.6 | 3 | 肯定 | 确认 | answer | all | 伴随笑声 | 对对对，直接取关。 |\n| SPEECH | 29:19.4 | 29:20.6 | 1 | 玩笑 | 插话 | statement | 3 | - | 好这个你可以裁掉啊。 |\n| SPEECH | 29:20.6 | 29:21.8 | 3 | 坚持 | 反驳 | statement | 1 | - | 没事我这一定要保留。 |\n| SPEECH | 29:21.8 | 29:23.4 | 1 | 坚持 | 强调 | statement | 3 | - | 这个必须保留。 |\n| SPEECH | 29:23.6 | 29:38.2 | 3 | 认真 | 阐述观点 | statement | all | - | 就是这个我一定要说啊，这个这个我觉得作为一个理想车主，这个我还是有一些观点在里面，其实新能源的品牌今年可能多了我觉得还好，前几年的时候呢呃基本上跟那个粉丝战队我觉得也半斤八两吧。 |\n| SPEECH | 29:38.4 | 29:50.7 | 3 | 分析 | 描述现象 | statement | all | - | 就是属于那种几个那个新势力的品牌里边呢互相看不顺眼吧，可能是内心可能有一种那种鄙视链的那么那么一种感觉，这种呢我一般一贯来说呢也都是不参与。 |\n| SPEECH | 29:51.1 | 29:56.7 | 3 | 理性 | 表达态度 | statement | all | - | 那个无视这么一种情况，销量在那摆着，销量说话嘛销量。 |\n| SPEECH | 29:57.2 | 29:58.7 | 1 | 总结 | 评价 | statement | 3 | - | 典型你看典型的理想车主。 |\n| SPEECH | 29:58.7 | 30:06.2 | 3 | 务实 | 解释动机 | statement | all | - | 销量其实啊销量其实为什么是在于啊，其实从我的视角，比如说我我要想我要开十年的时候呢，我总怕公司倒了嘛。 |\n| SPEECH | 30:06.2 | 30:17.0 | 3 | 举例 | 类比说明 | statement | all | - | 比如说像威马车主对不对？有那个什么威马车主自自救手册，去看我那个配件要从哪里换才能把它换过来对吧，我肯定不希望公司是倒掉了。 |\n| SPEECH | 30:17.0 | 30:21.8 | 3 | 期望 | 表达愿望 | statement | all | - | 所以我从某种意义上我是希望这个公司呢是能平稳的运转下去的。 |\n| SPEECH | 30:22.0 | 30:30.8 | 3 | 关注 | 提出需求 | statement | all | - | 第二点呢我在意的就是说我开的过程中啊，我比如说它有些bug啊有些哪些点，它能不能后续的能那个持续的把它优化升级下去。 |\n| SPEECH | 30:31.0 | 30:36.6 | 3 | 满意 | 评价服务 | statement | all | - | 这我觉得呢它每个月的升级呢其实做的还可以，基本上是切中了要害。 |\n| SPEECH | 30:36.9 | 30:45.3 | 3 | 自豪 | 分享经历 | statement | all | - | 像我自己其实我也提过一些bug，我还提过QQ音乐的一个bug，我作为一个程序员我把它那个什么产生的原因啊之类的都都分析好了。 |\n| SPEECH | 30:45.3 | 30:46.2 | 1 | 好奇 | 追问结果 | question | 3 | - | 嗯然后修了吗？ |\n| SPEECH | 30:46.2 | 30:53.5 | 3 | 惊喜 | 讲述结果 | statement | all | - | 因为我刚开始其实没有抱有希望，因为QQ音乐毕竟是第三方公司在它车机上开发的一个软件，没想到它后边一个版本它就把它修掉了。 |\n| SPEECH | 30:53.8 | 30:57.5 | 3 | 认可 | 总结态度 | statement | all | - | 所以这个态度我觉得是可以去接受的，挺好的。 |\n| SPEECH | 30:57.9 | 30:59.8 | 1 | 总结 | 归纳优势 | statement | 3 | - | 对，这是互联网公司的模式优势。 |\n| SPEECH | 31:00.0 | 31:11.1 | 1 | 引导 | 转换话题 | question | 2 | - | 咱们收拢一下回到一个问题，就是比如今天呃你刚才说销量我觉得可以确实可以讨论一下，理想的销量到了今天到了这个程度，你觉得是不是已经进入到比亚迪和特斯拉的那个那个那个阵营当中去了？ |\n| SPEECH | 31:11.4 | 31:18.0 | 2 | 专业 | 开始分析 | statement | 1 | - | 呃我觉得它今天就是我我我们要讲几种问题，第一个我觉得车企要面临几个坎，第一个它要解决10万销量的问题。 |\n| SPEECH | 31:18.1 | 31:18.5 | 1 | 附和 | 确认 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 31:18.6 | 31:24.6 | 2 | 条理 | 列举阶段 | statement | 1 | - | 第二个阶段它解决30到50万销量，第三个阶段解决对吧更高的一个就百万百万级销量。 |\n| SPEECH | 31:24.6 | 31:35.4 | 2 | 分析 | 阐述挑战 | statement | 1 | - | 所以我觉得这个理想到这个级别它其实依然还有非常多的挑战，所以我们今天看到就是销售渠道上，包括理想在做渠道的一个改革，包括现在销售渠道上已经发生了一些变化。 |\n| SPEECH | 31:35.4 | 31:45.0 | 2 | 解释 | 说明策略 | statement | 1 | - | 就大家在建门店不完全是商超，因为以后商超店它其实摆不下那么多的车型，所以今天大家可能会选择一些在市郊的地方建更大的门店，有点像以前的4S店。 |\n| SPEECH | 31:45.0 | 31:45.3 | 1 | 附和 | 确认 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 31:45.3 | 31:49.4 | 2 | 展望 | 总结未来 | statement | 1 | - | 但又不完全一样，所以这些都是未来的一个交付去做准备的。 |\n| SPEECH | 31:49.4 | 31:49.7 | 1 | 附和 | 确认 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 31:49.7 | 31:56.9 | 2 | 肯定 | 最终结论 | statement | 1 | - | 所以它今天证明了我觉得证明了ONE这款车型，证明了L系列的车型的销量，证明了它其实有很好的产品定义能力。 |\n| SPEECH | 31:56.9 | 32:09.2 | 2 | 理性 | 分析现状 | statement | all | - | 以及说整个公司的管理体系，它的交付能力其实都都很好，但是到我觉得到了下一个级别，其实还是会面临非常非常大的一个挑战，包括我们今今年年底要发布的新车，所以它依然接下来还有很多的纯电的产品。 |\n| SPEECH | 32:09.2 | 32:13.3 | 1 | 确认 | 追问结论 | question | 2 | - | 所以你的回答就是否定的嘛，是吧？还没有到特斯拉跟比亚迪的那种。 |\n| SPEECH | 32:13.3 | 32:19.0 | 2 | 肯定 | 回答问题 | answer | 1 | - | 我的回答是还没有完全到这个区间，但就是它还需要再继续完成纯电上面的一个。 |\n| SPEECH | 32:19.0 | 32:28.2 | 1 | 引导 | 转换话题 | question | 2 | - | 对，那就第二个问题，哎你先回答这个问题吧，你也是其实在互联网公司带团队的嘛，对吧？然后你你对这个公司的评价，你觉得那刚才回答了刚才那个问题。 |\n| SPEECH | 32:28.2 | 33:22.5 | 3 | 认真 | 阐述观点 | statement | all | 语速适中/逻辑清晰 | 嗯，我觉得怎么看呢？首先啊先说结果啊，结果上讲啊，我觉得确实是肯定是没有到那么大一个量级的，因为它从那个SKU的那个拆分啊，再到它那个能覆盖的各种的那个群体，它肯定是没有达到那个量级的。但是我对这家公司呢，从是不是具有长久的一个发展力上呢，我还是持有一个那个相对来说比较乐观的一个态度。我为什么会这样说啊？我对李想本身这个本人本身啊在微博上发的各种的言论本身，其实我不是特别的关注，但是我会有的时候会关注一些他做一些结构化去，比如说内部或者外部去表达的一些文章，尤其是大概是好几个月之前有一个很长很长的一个万字以上的文章，就大概去讲自动化驾驶该怎么做怎么做的。然后我不仅从头到尾的看完了，然后我还分享给了我的各个同事们啊，看大家看完之后对里边的一些表达。 |\n| SPEECH | 33:22.5 | 33:23.3 | 3 | 强调 | 列举要点 | statement | all | - | 打法。 |\n| SPEECH | 33:23.9 | 33:44.7 | 3 | 赞赏 | 深入分析 | statement | all | - | 战略，然后以及每一步该做什么，每一步该取舍什么，我们觉得非常非常佩服这个人，不管这个文章是不是他自己写的，还是他的团队来去写的，还是他的团队来去做这个事情的。这个这个里边的一些分析和思考和这个站位，什么时候该做什么事情，刀用在什么刃上，我觉得呢太符合我们的认知了。 |\n| SPEECH | 33:44.7 | 33:45.0 | 1 | 附和 | 表示认同 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 33:45.0 | 33:55.2 | 3 | 总结 | 给出结论 | statement | all | - | 简单来说呢，如果一个公司能做到这样一个认知，并且执行的时候呢是按照这个步步骤去执行的，那我觉得在短和中期呢我肯定是看好的。 |\n| SPEECH | 33:55.4 | 34:01.4 | 2 | 赞同 | 补充观点 | statement | all | - | 嗯，我这个结论我也认同，就是说我说今天他还没有完完全全证明自己，但是我觉得这家公司他是具备这个潜力的。 |\n| SPEECH | 34:01.5 | 34:46.6 | 1 | 批判性思考 | 表达异议 | statement | all | 语速稍快/语气坚定 | 嗯，对，我也我差不多也是这个意见，就是说他呃我我前两天还说嘛，说他他现在的市值正好是小米在二零一四年，就我看他的这些分享的时候，我我倒不会怀疑这个东西是不是从他那出来的，你放心吧，李想不会容忍这种对影响内外心智的东西不出于自己的手，他一定是非常强把控，这大部分东西应该就是他的，他不会有什么团队的人去讲去去做过多的这种这种干涉。但是就是我不能接受的是他在每一次分享当中呢都会扭曲修正一些他过去，比如他可能不愿意提及的事情，或者是一些没有做好的事情，就是每次给大家看的感觉，哇这个人从第一天从day one啊就想清楚了，想明白，而且一步一步执行下去。我觉得理想的发展不是这样的，我觉得理想的发展中我觉得更具决定性东西就是求生欲。 |\n| SPEECH | 34:46.6 | 35:09.0 | 1 | 理性 | 阐述观点 | statement | all | - | 就是当他资源非常少的时候，当他只有一次机会的时候，这个时候他一定会把那个事情做到最好。我觉得更多我我更多是从这个方向去理解理想的创业故事，而且我能从中得到一些正向性的东西。至于他搞那些成功学的东西对吧，啊我我为什么成功，过去成功今天成功明天会更加成功，这个东西我就难以理解。下一个我觉得有可能就快速进入第二个讨论，就是你们觉得理想能不能过纯电关？ |\n| SPEECH | 35:09.2 | 35:10.6 | 2 | 肯定 | 回答问题 | answer | 1 | - | 我相信理想具备这个能力。 |\n| SPEECH | 35:11.1 | 35:11.9 | 1 | 好奇 | 追问 | question | 2 | - | 嗯解释一下。 |\n| SPEECH | 35:12.4 | 35:39.7 | 2 | 专业 | 详细论证 | statement | 1 | - | 解释主要是从这个公司的信心，我觉得第一呃确实今天大家在讲，我觉得纯电很多的问题就是在讲三电，对吧？三电的一个技术能力以及讲补能的措施。那这两件事情我觉得大家其实呃每一家企业它现在并没有在技术上有那么大那么大的一个差异，或者说有一家有足够领先的一个技术优势，我认为这些东西都是可以赶超的。第二个问题就讲补能措施，补能措施你看蔚来今年他要他要建一千座换电站。 |\n| SPEECH | 35:39.8 | 35:40.2 | 1 | 附和 | 确认信息 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 35:40.4 | 36:00.7 | 2 | 专业 | 继续论证 | statement | 1 | - | 对吧？它依然处于整个行业渗透率依然处于一个非常早期，大家还是要去建更多的一个补能措施，你并不能说我到了二零二三年所有的车企都已经完成了所有补能的设施的一个建设，然后明年就不再建了。所以我认为依然有很多就空白的一个场地需要大家去抢占的，所以这里面其实还是有空间，其实纯电说白了就这两个问题。 |\n| SPEECH | 36:00.7 | 36:03.2 | 1 | 确认 | 总结观点 | question | 2 | - | 就是说你的意思就是纯电不太有什么先发优势？ |\n| SPEECH | 36:03.5 | 36:13.1 | 2 | 辩证 | 澄清观点 | statement | 1 | - | 纯电它肯定现在是有品牌认知上的一个先发优势，但我不认为说现在技术上面的一些问题会影响这家企业是完全推不出一个有竞争力的一个产品。 |\n| SPEECH | 36:13.2 | 36:13.5 | 1 | 附和 | 确认收到 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 36:13.5 | 36:50.5 | 2 | 深入分析 | 阐述逻辑 | statement | 1 | - | 然后第二个点就是呃当当然它对增程的时候，它其实是有一个具备成本上的一个优势，所以它它去做一个纯电产品，我们今天要理解说我们在产品竞争力上不完全是能源，今今天你用了哪一种能源，你用了油还是用了电，就具备一个产品竞争力，产品竞争力依然是我们讲理想有空间有智能，对吧？有电，然后呢它有非常强的产品定义能力去理解消费者到底要什么。所以它进入这个充分我觉得充分内卷的这个市场的时候，它一定会有一定一个压力，就是我我去定义这个这个市市面上的产品以及品牌都有很多的先发优势了，所以我现在能能不能在纯电市场上出一个爆款？ |\n| SPEECH | 36:50.6 | 36:51.0 | 1 | 附和 | 确认收到 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 36:51.0 | 37:09.2 | 2 | 客观评估 | 表达看法 | statement | 1 | - | 我这个是有难度的，但是说我能不能在纯电里面出一个还不错的产品，我相信理想这家公司它已经验证了产品定义能力能帮助它去做一个还不错的一个纯电产品。就是因为智能座舱就智能空间的定义以及智能驾驶，智能驾驶虽然它可能现在不是一个绝对的第一，它还是在第一梯队。 |\n| SPEECH | 37:09.4 | 37:13.5 | 1 | 追问 | 要求定义 | question | 2 | - | 然后另外就大家可能会问... 那你这那你的第一梯队的定义你定义一下吧，什么叫第一梯队？ |\n| SPEECH | 37:13.5 | 37:15.2 | 2 | 直接回答 | 给出定义 | answer | 1 | - | 我觉得新势力吧，魏小理华。 |\n| SPEECH | 37:15.4 | 37:16.1 | 1 | 确认 | 补充说明 | statement | 2 | - | 都是在第一梯队。 |\n| SPEECH | 37:16.1 | 37:18.8 | 2 | 补充 | 细化范围 | statement | 1 | - | 大概对，特特可能没有城市的智驾能力。 |\n| SPEECH | 37:18.8 | 37:22.8 | 1 | 聚焦 | 提出具体问题 | question | 2 | - | 我问你一个更集中的问题，就是理想的纯电产品你会不会考虑？ |\n| SPEECH | 37:23.8 | 37:25.4 | 3 | 犹豫 | 开始回答 | statement | 1 | - | 纯电产品你要看... |\n| SPEECH | 37:25.4 | 37:29.8 | 2 | 果断 | 表达立场 | statement | 1 | 抢话/重叠 | 我肯定会买，我一直在等一个理想的纯电，因为其实我不是一个增程的一个高频用户。 |\n| SPEECH | 37:30.0 | 37:30.4 | 1 | 附和 | 确认收到 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 37:30.8 | 37:31.4 | 1 | 转向 | 询问他人 | question | 3 | - | 嗯你呢？ |\n| SPEECH | 37:31.7 | 37:40.1 | 3 | 假设性回答 | 阐述条件 | statement | 1 | - | 你站在我的角度上讲啊，如果啊呃纯电的产品呢，它比如说后边在里程上它让我不焦虑了，那我当然会买，因为我从现在... |\n| SPEECH | 37:40.1 | 37:42.2 | 1 | 打断/假设 | 设定前提 | statement | 3 | 语速快/被打断感 | 但如果说你要买纯电的话你就... |\n| SPEECH | 37:42.2 | 37:44.7 | 3 | 假设 | 提出观点 | statement | all | - | 或者或者我假设啊，我要买纯电，对不对？ |\n| SPEECH | 37:44.7 | 37:48.7 | 3 | 引导 | 设定话题 | statement | all | - | 好，我们现在把这个话题变了一下，就是说我就是要买纯电。 |\n| SPEECH | 37:48.7 | 37:51.2 | 3 | 探讨 | 提出疑问 | question | all | - | 那么我有没有可能会买一下，对不对？ |\n| SPEECH | 37:51.2 | 37:55.2 | 3 | 肯定 | 表达意向 | statement | all | - | 那我觉得呢，按照我现在的对这个体验，我有可能还会买。 |\n| SPEECH | 37:55.2 | 37:59.7 | 3 | 强烈 | 表达厌恶 | statement | all | 语气加重 | 我首先我是不能忍受特斯拉，我觉得特斯拉它这个正常人他是不不会买的。 |\n| SPEECH | 37:59.7 | 38:04.7 | 3 | 类比 | 阐述认知 | statement | all | - | 我对现在呃车的一个认知啊，我觉得跟十年前的手机是一样的。 |\n| SPEECH | 38:04.7 | 38:09.0 | 3 | 举例 | 列举品牌 | statement | all | - | 现在手机，华为，小米，vivo这种。 |\n| SPEECH | 38:09.0 | 38:10.2 | 3 | 感叹 | 强调价值 | statement | all | - | 时间很宝贵。 |\n| SPEECH | 38:10.2 | 38:14.0 | 3 | 随意 | 描述行为 | statement | all | - | 我都懒得去对比，干嘛要对比呢，我就买个两千块钱的工作机。 |\n| SPEECH | 38:14.0 | 38:18.0 | 3 | 轻松 | 举例说明 | statement | all | - | 那我红米就找一个两千块钱机型买了不就得了，能差到哪里去呢？ |\n| SPEECH | 38:18.0 | 38:19.0 | 3 | 过渡 | 引入话题 | statement | all | - | 那个... |\n| SPEECH | 38:19.0 | 38:24.7 | 1 | 幽默 | 开玩笑 | statement | 3 | 语速快/带笑意 | 我跟你说理想最后这个对这个节目最不满意的就是，我们理想尊贵的理想说，竟然买红米。 |\n| EVENT | 38:24.7 | 38:25.2 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 38:25.2 | 38:29.7 | 3 | 辩解 | 澄清观点 | statement | 1 | - | 不不不不，这个跟理想车主我觉得是一样的，就是经济、实用、够用就行。 |\n| SPEECH | 38:29.7 | 38:32.2 | 1 | 调侃 | 互动回应 | statement | 3 | 伴随笑声 | 哎你这个理想理想要疯，听了要疯了。 |\n| EVENT | 38:32.2 | 38:32.7 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 38:32.7 | 38:38.2 | 3 | 理性 | 分析逻辑 | statement | all | - | 如果我确定要买一个纯电产品呢，我在比如说以前它的增程的角度上讲，我可能验证过它的空间。 |\n| SPEECH | 38:38.2 | 38:45.7 | 3 | 分析 | 列举验证点 | statement | all | - | 验证过了它的比如说一些交互，验证过了它比如说一些那种对车主基本的一个比如说态度吧。 |\n| SPEECH | 38:45.7 | 38:50.7 | 3 | 推导 | 得出结论 | statement | all | - | 那我会觉得那我纯电的时候无非就是说变成了一个纯电。 |\n| SPEECH | 38:50.7 | 38:56.2 | 3 | 条件 | 设定前提 | statement | all | - | 那其他只要能力跟其他厂商是打，就是基本就你刚刚讲的三电的能力是打平的。 |\n| SPEECH | 38:56.2 | 39:01.0 | 3 | 反问 | 强调效率 | statement | all | - | 那我觉得就OK了，我干嘛不买呢，我还省了那个什么纠结挑选的时间，多好啊。 |\n| SPEECH | 39:01.0 | 39:04.7 | 3 | 总结 | 核心观点 | statement | all | - | 还是那时候对那个中年人来讲，时间是最宝贵的资源。 |\n| SPEECH | 39:04.7 | 39:08.0 | 2 | 专业 | 开启新话题 | statement | all | - | 我觉得他回答了一个很重要的一个问题，就是这个市场的变化。 |\n| SPEECH | 39:08.0 | 39:11.0 | 2 | 分析 | 阐述阶段 | statement | all | - | 第一轮新能源汽车的竞争，它首先是产品力的竞争。 |\n| SPEECH | 39:11.0 | 39:15.0 | 2 | 解释 | 详细说明 | statement | all | - | 就我们讲说没有品牌，所有人都是产品力性价比的竞争。 |\n| SPEECH | 39:15.0 | 39:17.2 | 2 | 分析 | 阐述阶段 | statement | all | - | 第二轮竞争变成品牌心智的竞争。 |\n| SPEECH | 39:17.2 | 39:24.7 | 2 | 论证 | 举例说明 | statement | all | - | 就是你的你你想在品牌上他已经卖了这么多车，在品牌心智上他有先发优势，就是他一直做的这种家庭用车的一个定位。 |\n| SPEECH | 39:24.7 | 39:27.0 | 2 | 假设 | 提出情境 | statement | all | - | 所以那我同样大家的竞争力差不多。 |\n| SPEECH | 39:27.0 | 39:35.7 | 2 | 举例 | 列举品牌 | statement | all | - | 比如今天阿维塔，小鹏，对吧，蔚来，理想，然后或者还有很多智己，很多所有的品牌都推出了配置一模一样的车。 |\n| SPEECH | 39:35.7 | 39:38.7 | 2 | 提问 | 引导思考 | question | all | - | 或者非常相当的车，你会愿意购买哪一些品牌？ |\n| SPEECH | 39:38.7 | 39:48.2 | 2 | 回答 | 给出结论 | statement | all | - | 那你可能会愿意更愿意购买形式上设计好一点的，服务好一点的，或者说他已经卖过更多的车的一些品牌，可能这是品牌的一个先发优势。 |\n| SPEECH | 39:48.2 | 39:51.5 | 1 | 确认 | 总结观点 | statement | 2 | - | 明白，就是你你们觉得反正用户已经积累到这个基数了。 |\n| SPEECH | 39:51.5 | 39:51.7 | 2 | 确认 | 简短回应 | backchannel | 1 | - | 对。 |\n| SPEECH | 39:51.7 | 39:57.5 | 1 | 推测 | 延伸观点 | statement | 2 | - | 对吧，他总会有一大部分用户去转化的时候，只要不要太太差，我下一部车还会选理想。 |\n| SPEECH | 39:57.5 | 40:06.2 | 3 | 类比 | 举例佐证 | statement | all | - | 对，像iPhone大家经常吐槽功能不如五年前的安卓，很多人连安卓连试都懒得去试，不就是这么一个情况吗？ |\n| SPEECH | 40:06.2 | 40:10.2 | 1 | 反驳 | 提出不同看法 | statement | 3 | - | 呃这个我觉得还不一样，这iPhone确实在底层技术上还是遥遥领先的。 |\n| SPEECH | 40:10.2 | 40:16.7 | 1 | 解释 | 详细阐述 | statement | 3 | - | 包括各种硬的指标啊软的指标，只是说在有些营销的显性配置上可能还不如安卓做得好。 |\n| SPEECH | 40:16.7 | 40:24.2 | 1 | 辩证 | 补充观点 | statement | 3 | - | 但是并不代表就是大家因为已经用惯了iPhone就选iPhone，当然很多人是这样，但我觉得它底层的能力还是很强的。 |\n| SPEECH | 40:24.2 | 40:32.7 | 1 | 批判 | 指出问题 | statement | all | - | 我觉得理想的核心没有解决的一个问题就是，到今天为止我觉得理想还说不清楚除了产品整个产品定义方面，它底层能力到底在哪里。 |\n| SPEECH | 40:32.7 | 40:40.0 | 1 | 讽刺 | 举例对比 | statement | all | - | 未来你说我的我哪怕有人说未来那个服务能力或者说那个换电，也也会像批评增程一样，认为是脱裤子放屁，对吧？ |\n| EVENT | 40:40.0 | 40:40.7 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 40:40.7 | 40:42.2 | 1 | 肯定 | 总结陈词 | statement | all | 语速加快 | 但是我觉得那确实是一种底... |\n| SPEECH | 40:42.2 | 40:55.6 | 1 | 认真 | 阐述观点 | statement | all | - | 能力，就是我建了这么多换电站，我换电站实实在在摆在那，它就是网络，它就是网络效应，对吧？也包括这次去，哎那是哪个景区啊？大家都去了蔚来的充电站，因为只有蔚来的充电站在那里有有充电，我觉得这确实可以称之为一种底层能力。 |\n| SPEECH | 40:55.6 | 41:05.4 | 2 | 专业 | 补充信息 | statement | all | - | 今天其实他在推出嗯纯电之前，他已经在建他的补能网络了，所以我我预计其实我们在看到Mega面世的时候，他其实会公布说他到底建了多少个站。 |\n| SPEECH | 41:05.4 | 41:06.1 | 1 | 好奇 | 追问细节 | question | 2 | 插话 | 而且呢？ |\n| SPEECH | 41:06.1 | 41:08.0 | 2 | 肯定 | 确认事实 | answer | 1 | - | 他其实已经公布了他的计划，所以... |\n| SPEECH | 41:08.0 | 41:09.4 | 3 | 确认 | 举例验证 | question | 2 | - | 比如说年底三百辆嘛我记得。 |\n| SPEECH | 41:09.4 | 41:11.2 | 2 | 肯定 | 确认数据 | answer | 3 | - | 对对，年底三百个站，年底三百个站。 |\n| SPEECH | 41:11.2 | 41:17.2 | 1 | 好奇 | 提出话题 | question | all | - | 哎你们对Mega这个最近不是透露出来一些谍照吗？你对你们对这个车怎么什么怎么理解或者怎么评价？ |\n| SPEECH | 41:17.8 | 41:26.3 | 2 | 分析 | 表达观点 | statement | all | - | 呃我觉得它确实是一个挑战，因为我们现在今天看到五十万以上的这种纯电MPV，它其实量其实并没有那么大，就我们看到极氪009。 |\n| SPEECH | 41:26.3 | 41:28.6 | 1 | 纠正 | 补充事实 | statement | 2 | 抢话 | 就只其实只有一款，极氪009。 |\n| SPEECH | 41:28.6 | 41:31.8 | 2 | 分析 | 对比竞品 | statement | all | - | 对，然后D9它其实卖得更好，就没有价格那么高，它卖得更好。 |\n| SPEECH | 41:31.8 | 41:32.8 | 1 | 指出 | 技术细节 | statement | 2 | 插话 | 但它都是DMI嘛。 |\n| SPEECH | 41:32.8 | 41:43.0 | 2 | 解释 | 深入分析 | statement | all | - | DMI，对，它不是纯电，所以我觉得是纯粹作为这个品类来说，它是一个比较大的挑战。但是呢我能理解理想为什么要去做这款车，他其实就想做更极致的空间。 |\n| SPEECH | 41:43.3 | 41:43.7 | 1 | 附和 | 表示认同 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 41:43.7 | 41:44.6 | 2 | 继续 | 延续观点 | statement | all | - | 其实在因为原来... |\n| SPEECH | 41:44.6 | 41:46.7 | 1 | 引用 | 引用原话 | statement | 2 | 打断/重叠 | 他自己说了嘛，原话就是为我自己造的车。 |\n| SPEECH | 41:47.0 | 41:47.5 | 2 | 赞同 | 简短回应 | backchannel | 1 | 伴随笑声 | 啊对。 |\n| EVENT | 41:47.5 | 41:48.2 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 41:48.2 | 41:50.1 | 1 | 调侃 | 幽默评论 | statement | 2 | 重叠 | 家里孩子孩子太多了。 |\n| SPEECH | 41:50.1 | 42:05.9 | 2 | 理性 | 自我剖析 | statement | all | - | 他家庭的成员多，但是我我比较好奇就是说，我不能完全的说今天去去猜想或做做一个盲目的预测这个车到底能卖多少，因为我也不是他的典型用户，我买了它我也没地方停，它这个车还对我来说有点长有点大，我并不需要这样的车。 |\n| SPEECH | 42:06.1 | 42:17.9 | 2 | 肯定 | 评价产品 | statement | all | - | 但是呢我我相信他在空间，今天他他其实打的这个就是他做的这种空间上的一个定义，我觉得一定是对于这个市场来说是非常非常好的，非常新鲜的，非常重要的一个需求。 |\n| SPEECH | 42:17.9 | 42:39.1 | 2 | 总结 | 归纳挑战 | statement | all | - | 所以他今天在验证这样的需求会不会被大家接受，以及去验证这样的需求被大家接受的前提，他又用了纯电的这个能源，那大家能不能去接受这样的一个车，然后不不用增程。所以我觉得这个产品上它其实反而体现了理想能不能推出一个就是它的纯电产品被用户能在多大程度上的接受的多重挑战。 |\n| SPEECH | 42:39.1 | 42:40.0 | 1 | 附和 | 表示同意 | backchannel | 2 | - | 嗯对，嗯。 |\n| SPEECH | 42:40.1 | 43:04.6 | 3 | 理性 | 换位思考 | statement | all | - | 站在一个反正大厂员工以及啊就是我对呃自己就非专业的一个理解的角度上讲呢，我是觉得啊在理想他自己要推这个这么一个产品之前呢，他的那个信息渠道和市场的调研，还有一些数据的分析呢一定可能比我们都是要充分和多得多。比如说我们可能觉得像我我肯定也不会买，首先啊我都觉得我的地库我也停不下这么大一个车。 |\n| EVENT | 43:04.6 | 43:05.6 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 43:05.6 | 43:14.6 | 3 | 假设 | 提出假设 | statement | all | - | 那个我也不需要这么贵的一辆车啊，但是呢我觉得他既然去愿意去出这个产品，他也许是调研过的，有多好多好的人，他现在可能... |\n| SPEECH | 43:14.6 | 43:36.6 | 1 | 反驳 | 表达反对观点 | statement | 3 | 语速加快/强调 | 我我我恰恰反对这点，我觉得理想他是一个尼采主义者，他首先是我足够的想，就是我我首先有个先验性的判断，就是我觉得当然理想ONE或者理想L9你会发现后期你...当然这个这个听我讲完听我讲完，你先听我讲完别着急啊，就是当这个产品已经出现之后啊，你会做非常多的调研，你会发现哎正好真的跟用户的需求match，但是你要想在理想ONE... |\n| SPEECH | 43:36.5 | 43:46.7 | 1 | 认真 | 阐述观点 | statement | all | 语速较快 | 和L9出现之前，我认为这个我首先首先承认我犯了这个错误，就是基于过去的市场理解就说哦汉兰达一个月只能卖两万台，G8一个月最多也只能卖两万台，这就是个市场空间的顶。 |\n| SPEECH | 43:46.7 | 43:52.2 | 1 | 肯定 | 举例论证 | statement | all | - | 但是你会发现理想就戳破了，因为它的产品定义最后超出了用户的预期，对吧？满足更多用户的需求。 |\n| SPEECH | 43:52.2 | 44:09.9 | 1 | 分析 | 深度解读 | statement | all | - | 我觉得理想在做Mega这个产品，我觉得它并不是市场营销或者市场调研驱动的它的决策，我觉得它的决策更多的是它综合的它长期经过经历了汽车行业的竞争和他自己做汽车媒体的经验，他觉得这个行业一款车可能会超出用户的预期，砸到很多用户的心坎里。 |\n| SPEECH | 44:09.9 | 44:19.4 | 1 | 总结 | 归纳结论 | statement | all | - | 所以他才去做，而不是说基于数据上去判断，觉得这个他更多是基于一种怎么说对自己过去经历或者过去做产品经历一种超越吧，我就一定要。 |\n| SPEECH | 44:19.8 | 44:34.7 | 1 | 解释 | 背景补充 | statement | all | - | 就之前他是没有足够的资源嘛，就在做理想ONE或者甚至L系列刚开始的时候，他都是缺乏足够的资源，今天他可能账上趴着这么多现金，对吧？公司市值已经四百五十亿美元，他觉得我有足够多的弹药子弹去做这样一款车，而且他就要可以做到。 |\n| SPEECH | 44:34.8 | 44:42.2 | 2 | 反驳 | 提出不同视角 | statement | all | 语气坚定 | 那但我觉得现金是回答另外一个问题啊，就是技术上的投入，现金它可能解决技术上的投入的问题，它不是这样的一个产品的定义。 |\n| SPEECH | 44:42.2 | 44:58.6 | 2 | 专业 | 行业分析 | statement | all | - | 但是当然这个那个我认同，以我对理想的了解，理想并不是一家根据调研结果，根据用户调研，依赖底下的产品团队做用户调研以及就是做对标细分市场A级车B级车C级车，然后大概怎么样，我我我又用什么样的配置去做产品定义的公司。 |\n| SPEECH | 44:58.6 | 44:59.4 | 1 | 附和 | 确认观点 | backchannel | 2 | - | 对，是。 |\n| SPEECH | 44:59.4 | 45:03.0 | 2 | 强调 | 总结特质 | statement | all | - | 不是，所以我才说理想它这家公司它有很强的产品定义能力。 |\n| SPEECH | 45:03.0 | 45:03.3 | 1 | 附和 | 简短回应 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 45:03.3 | 45:14.7 | 2 | 叙述 | 讲述决策过程 | statement | all | - | 对，然后这个我觉得基基于他们想做一个更大更旗舰的车，其实这这个车最早的时候考虑过增程版本，但是后来在做空间的时候觉得不够极致，所以他们最后只做了纯电版本。 |\n| SPEECH | 45:14.7 | 45:15.3 | 1 | 附和 | 简短回应 | backchannel | 2 | - | 嗯。 |\n| SPEECH | 45:15.5 | 45:27.8 | 3 | 平和 | 分享观察 | statement | all | - | 我的感觉啊就是说从某种角度上讲呢，呃当然我说的不一定对啊，就是我现在感觉呢新能源车它其实那个出一款新的产品，它的研发成本和迭代的周期是非常快的。 |\n| SPEECH | 45:27.8 | 45:31.1 | 3 | 举例 | 具体案例 | statement | all | - | 甚至像L7这种车好像就是很。 |\n| SPEECH | 45:31.1 | 45:31.8 | 1 | 插话 | 补充时间 | backchannel | 3 | 抢话/重叠 | 一年多时间。 |\n| SPEECH | 45:31.8 | 45:49.5 | 3 | 分析 | 逻辑推导 | statement | all | - | 一年不到可能就出来了，对不对？所以它整体来说呢，如果你比如说就算哪一款产品，它不是一个主打的一个产品，它在中间的过程呢，比如说它确实销量不佳，但是呢帮它验证了一些东西，以及啊有一些能力是复用的，我觉得整体来说呢也是OK的。 |\n| SPEECH | 45:49.5 | 45:49.9 | 1 | 附和 | 简短回应 | backchannel | 3 | - | 嗯。 |\n| SPEECH | 45:50.0 | 46:02.3 | 3 | 展望 | 战略推演 | statement | all | - | 就比如说它可以借助这个这波产品，比如说去推我纯电，我我是有产品了，我的那个充电站我建了多少多少，我也有快充，对吧？我的快充可能比别人更快，它是可以去验证这些技术能力。 |\n| SPEECH | 46:02.3 | 46:12.3 | 3 | 比喻 | 形象说明 | statement | all | - | 这个车呢纯粹你可以把它理解想象成有可能是一个靶子，这个靶子呢只是让大家去关注好，我也有这个能力，我未来会走什么样样一个路线。 |\n| SPEECH | 46:12.3 | 46:12.7 | 1 | 附和 | 确认理解 | backchannel | 3 | - | 啊对。 |\n| SPEECH | 46:12.7 | 46:14.9 | 3 | 总结 | 最终观点 | statement | all | - | 就是我兜底的时候我可以做这么一件事儿嘛。 |\n| SPEECH | 46:14.9 | 46:22.3 | 1 | 认真 | 提出观点 | statement | all | - | 对，我觉得有一点是我觉得我的想法，他做Mega这个车有一个特别好处就是把他的在高端的品牌形象固化住。 |\n| SPEECH | 46:22.3 | 46:26.6 | 1 | 疑惑 | 举例说明 | statement | all | - | 因为他最近不是刚刚L9出了Pro版本，因为我觉得这是一个很匪夷所思的。 |\n| SPEECH | 46:27.0 | 46:34.6 | 1 | 分析 | 阐述现状 | statement | all | - | 当然他可能有他的数据或者说他的想法，我觉得现在理想的核心呢是在更高端的车型上，他的对手已经布已经压过来了。 |\n| SPEECH | 46:34.9 | 46:45.3 | 1 | 分析 | 列举竞品 | statement | all | - | 对吧，通过一些比如说像越野取向啊，对吧，或者更加豪华的品牌啊，或者离像华为那样出一个M9，对吧，想去对标这种迈巴赫的类似的这种产品体验。 |\n| SPEECH | 46:45.6 | 46:53.4 | 1 | 紧迫 | 描述竞争态势 | statement | all | - | 然后去在在在上面封盖你，把你压在，因为理想其实你会发现从30万出头到45万，他产品布的非常密。 |\n| SPEECH | 46:53.8 | 46:57.1 | 1 | 肯定 | 确认事实 | statement | all | - | 对吧，L7 L8 L9已经已经把这块它的优势区间占住了。 |\n| SPEECH | 46:57.1 | 47:02.0 | 1 | 推测 | 分析策略 | statement | all | - | 这个时候其实对手的竞争策略很有可能就是两端嘛，要么我从下面挤你，要么我从上面挤你，对吧？ |\n| SPEECH | 47:02.3 | 47:09.8 | 1 | 担忧 | 指出问题 | statement | all | - | 其实你会发现他的很多对手已经比他更强大的对手已经在这样去布局，他他还在这个45万呃30到40万之间去密布他的产品线。 |\n| SPEECH | 47:10.1 | 47:17.0 | 1 | 期望 | 提出建议 | statement | all | - | 这个地方我觉得我更希望是L9出一个更高端，比如说啊内饰更加豪华的一个跟某一个品牌做联名的一个版本。 |\n| SPEECH | 47:17.4 | 47:24.1 | 1 | 感叹 | 评价Mega | statement | all | 语气夸张/强调 | 但是我觉得Mega可能会起到这样的作用，就是说我这东西拿出来，别人哪怕不买觉得我靠，这车我靠挺牛逼的。 |\n| SPEECH | 47:24.5 | 47:33.8 | 1 | 自嘲 | 表达怀疑 | statement | all | - | 对吧，让我觉得对理想这个品牌，对吧，包括刚才我们就是当然我就作为理想黑，我怀疑它的底层能力，那我就拿个东西证明我的底层能力。 |\n| SPEECH | 47:34.6 | 47:38.0 | 1 | 总结 | 归纳使命 | statement | all | - | 对不对？我觉得这可能是未来Mega这个车的使命。 |\n| SPEECH | 47:38.7 | 47:46.4 | 2 | 理性 | 补充观点 | statement | all | - | 而且其实Mega它本身就不是我们今天讲20到30万区间或30到40万区区间的纯电车，它本身它的销量就在不同的区间。 |\n| SPEECH | 47:46.4 | 47:50.8 | 2 | 分析 | 预测销量 | statement | all | - | 所以它很有可能它因为这这个Mega它首先它的用户量级不会那么的大。 |\n| SPEECH | 47:51.0 | 47:51.3 | 1 | 附和 | 简短回应 | backchannel | all | - | 嗯。 |\n| SPEECH | 47:51.4 | 47:56.1 | 2 | 分析 | 阐述优势 | statement | all | - | 那其实它更容易在这第一批的用户里面去做补能设施的一个建设。 |\n| SPEECH | 47:56.4 | 48:08.3 | 2 | 解释 | 用户画像 | statement | all | - | 就是因为我第一批的用户其实并没有那么多，而且大家也有可能是这批的用户他并没有那么强的一个高频的一个长途的需求，因为他们可能是一个更富有的一个群体，家里有别墅啊，然后开这个车。 |\n| SPEECH | 48:08.5 | 48:15.4 | 2 | 结论 | 总结包容性 | statement | all | - | 那他们其实可能都多少有家充，所以他有可能他的包容性我觉得可能会比刚需家庭会更高一点。 |\n| SPEECH | 48:15.4 | 48:20.5 | 1 | 追问 | 提出反例 | question | all | - | 那为什么腾势你就你就解释不了腾势为什么纯电那么少，卖的那么少的原因？ |\n| SPEECH | 48:21.0 | 48:21.6 | 1 | 追问 | 继续提问 | question | all | - | 他们也是就... |\n| SPEECH | 48:21.6 | 48:29.4 | 2 | 回答 | 解释原因 | answer | all | - | 今天大家同样在买肯定是增程优先，我觉得肯定是增程优先，因为增程它今天我们看它的市场的规模，它肯定是比纯电要更高的。 |\n| SPEECH | 48:29.4 | 48:29.8 | 1 | 附和 | 简短回应 | backchannel | all | - | 嗯嗯。 |\n| SPEECH | 48:29.8 | 48:34.7 | 2 | 总结 | 重申观点 | statement | all | - | 所以我我只是说Mega拿来验证做纯电，它是一个还不错的一个产品。 |\n| SPEECH | 48:34.7 | 48:38.7 | 1 | 敬佩 | 表达尊重 | statement | all | - | 而且我我觉得这点我要补充就是我对理想respect这是第一款产品。 |\n| SPEECH | 48:38.9 | 48:50.3 | 1 | 赞赏 | 分析决策 | statement | all | - | 就是如果他同时出增程肯定会卖得更好，但是他不出增程，就是要验证我完全从一个纯电的结构，我承担这个市场可能会没有那么好的成本，我也要去试一下。 |\n| SPEECH | 48:50.5 | 49:03.6 | 1 | 感慨 | 评价创始人 | statement | all | - | 我觉得这个其实理想过去特别缺乏，因为过苦日子过久了嘛，他不会做这种这种就是哪怕牺牲我一部分的短短期的回报和信心，他就是一个天天看着这个ROI的一个人，对我觉得这点上来说我是很佩服的。 |\n| SPEECH | 49:03.8 | 49:10.7 | 2 | 乐观 | 观察细节 | statement | all | - | 而且我觉得你别看这次露出的这些照片是有点糙，但是但是你能感受到他在做一些新的东西。 |\n| SPEECH | 49:10.9 | 49:11.1 | 1 | 附和 | 连续赞同 | backchannel | all | 语速快 | 啊对对对对对。 |\n| SPEECH | 49:11.1 | 49:12.8 | 2 | 兴奋 | 强调创新 | statement | all | - | 就他想尝试做一件新的事情。 |\n| SPEECH | 49:12.8 | 49:13.0 | 1 | 附和 | 连续赞同 | backchannel | all | 语速快 | 是是是。 |\n| SPEECH | 49:13.0 | 49:14.5 | 2 | 开心 | 表达感受 | statement | all | - | 这件事是让人开心的。 |\n| SPEECH | 49:14.5 | 49:19.8 | 1 | 联想 | 引入新话题 | statement | all | 被打断/音频结束 | 哎这点我我之前在谈中国互联网公司的时候，我有讲过一个逻辑嘛，你会发现... |\n| SPEECH | 49:19.8 | 49:30.2 | 1 | 理性 | 提出观点 | statement | all | - | 中国现在互联网上最成功的企业家是不会升级自己的价值曲线，就是说马斯洛需求层级永远在最低层，我赚了五百亿美元，我还要赚再赚五百亿美元。 |\n| SPEECH | 49:30.5 | 49:35.4 | 1 | 理性 | 对比分析 | statement | all | - | 不会像过去的古典一点的，就或者六零后的企业家一样，要升级自己的这个需求。 |\n| SPEECH | 49:35.4 | 49:43.4 | 1 | 欣赏 | 举例说明 | statement | all | - | 我觉得理想表现出这点还是我挺欣赏，就是我我已经四百五十亿美元的公司了，我要做一款就是镇住你们的产品。 |\n| SPEECH | 49:43.5 | 49:51.5 | 1 | 赞赏 | 总结评价 | statement | all | - | 这这其实是确实从价值层级上来说往上提升了，这点我觉得虽然我是一个顽固的理想黑吧，但这点还是要就是鼓掌一下的。 |\n| SPEECH | 49:51.6 | 49:55.2 | 2 | 赞同 | 补充观点 | statement | all | - | 对，我我觉得他在挑战，他他想要挑战，想要创新做一些事情。 |\n| SPEECH | 49:55.2 | 50:00.3 | 1 | 引导 | 提出问题 | question | all | - | 我们讨论最后一个问题，就是你觉得最后的这个市场终局会是赢家通吃吗？ |\n| SPEECH | 50:00.7 | 50:10.9 | 1 | 追问 | 细化问题 | question | all | - | 就这四家跟手机行业一样，还是说就是这个周期可能一段时间谁强，那段时间又下来了，可能有超过十家甚至十十家以上的企业还在这个市场中存活。 |\n| SPEECH | 50:11.0 | 50:13.2 | 2 | 专业 | 开始回答 | answer | all | - | 我觉得汽车是一个非常长周期的竞争。 |\n| SPEECH | 50:13.2 | 50:25.2 | 2 | 分析 | 阐述论据 | statement | all | - | 你看过去这么多年，其实我中国中国的这些品牌，它其实每隔对吧，每隔十年，你看站在最高端的品牌，它其实还是会有一点点差别，包括今天比亚迪突然起来了，对吧，吉利也在发力。 |\n| SPEECH | 50:25.4 | 50:37.4 | 2 | 分析 | 继续阐述 | statement | all | - | 然后我们今天看说长安，长安也在做深蓝这样的一个品牌，然后所以我认为汽车它是就是汽车是一个非常长周期的竞争，有一些企业它能够在一个阶段内它获得先发优势，它能够领先三五年。 |\n| SPEECH | 50:37.6 | 50:38.0 | 1 | 附和 | 简短回应 | backchannel | all | - | 嗯。 |\n| SPEECH | 50:38.1 | 50:51.8 | 2 | 深入 | 政策分析 | statement | all | - | 但是车企又不是那么容易断气的公司，所以我们今天看到生产资质像这样的政策上的一些问题，大家国国内其实还是在有一些政策性的倾斜，倾斜到一些其实只有产能，但是他没有能力的一些厂商希望能扶他们起来。 |\n| SPEECH | 50:51.8 | 50:55.3 | 1 | 补充 | 插话确认 | statement | all | 抢话/重叠 | 尤其是地方政府，他考虑自己的就业和产业链，他更会这样。 |\n| SPEECH | 50:55.4 | 51:06.1 | 2 | 宏观 | 全球视角 | statement | all | - | 对，然后那我们今天如果是放到全球这个领域上看，你会发现说区域上面大家对于车型其实还是有不同方不同的需求，对吧，欧洲市场有欧洲市场的需求，中国市场有中国市场的需求。 |\n| SPEECH | 51:06.3 | 51:15.6 | 2 | 具体 | 案例分析 | statement | all | - | 理想今天他没有出海，因为增程，包括理想这样的大车，他不适合去欧洲，所以他也不做出海，所以那你说这个维度是在中国这个维度还是全球这个维度。 |\n| SPEECH | 51:15.6 | 51:28.3 | 2 | 个人 | 体验分享 | statement | all | - | 我不否认，尤其是我现在天天开智驾之后，我觉得我我买车我必须要城市智驾能力，但是我我们去跟行业内交流的时候，大家又都认同说我可能有领先优势，但最后这些能力有可能变成一种基础能力。 |\n| SPEECH | 51:28.5 | 51:28.8 | 1 | 附和 | 简短回应 | backchannel | all | - | 嗯。 |\n| SPEECH | 51:28.8 | 51:33.7 | 2 | 预测 | 总结观点 | statement | all | - | 那最后那到底谁谁会领先呢？所以我觉得是他会十年五到十年。 |\n| SPEECH | 51:33.7 | 51:38.9 | 1 | 归纳 | 确认理解 | statement | all | - | 所以你就认为就是从微观上来说能力会有回归，从宏观上来说周期会有波动。 |\n| SPEECH | 51:39.0 | 51:39.3 | 2 | 确认 | 简短回答 | answer | all | - | 对。 |\n| SPEECH | 51:39.3 | 51:41.2 | 1 | 结论 | 推导结果 | statement | all | - | 对，最后可能不会赢家通吃。 |\n| SPEECH | 51:41.6 | 51:49.4 | 2 | 修正 | 补充观点 | statement | all | - | 我觉得不完全是赢家通吃，因为因为汽车市场本质上它还是一个政策市场，它不完全是一个市场需求导向的市场。 |\n| SPEECH | 51:49.5 | 51:50.2 | 1 | 邀请 | 转向他人 | question | all | - | 嗯，你说。 |\n| SPEECH | 51:50.2 | 52:02.1 | 3 | 乐观 | 表达看法 | statement | all | - | 我看法类似，我觉得不会啊，因为很简单啊，只要你以后所有的能力打平的时候，你像外观，只要外观上我今天有一个创新的一个idea，它一定就有客户买，有客户买，那他就有生存的空间。 |\n| SPEECH | 52:02.2 | 52:05.4 | 1 | 质疑 | 追问前提 | question | all | - | 那你这个假设建立在一个前提下，有一天体验会拉平。 |\n| SPEECH | 52:05.4 | 52:08.4 | 3 | 坚定 | 确认假设 | answer | all | - | 我觉得体验一定会拉平，这个是我的所有的假设。 |\n| SPEECH | 52:08.6 | 52:09.0 | 1 | 好奇 | 追问原因 | question | all | - | 为什么？ |\n| SPEECH | 52:09.2 | 52:16.6 | 3 | 解释 | 类比说明 | statement | all | - | 呃这很简单嘛，现在就就是在我的视角上讲，它以后就是手机市场，它的硬件和软件的能力一定是打平的。 |\n| SPEECH | 52:16.6 | 52:19.0 | 1 | 平静 | 提出观点 | statement | all | - | 他以后找的就是一些细分的功能点。 |\n| SPEECH | 52:19.2 | 52:23.1 | 1 | 平静 | 阐述现状 | statement | all | - | 但手机市场已经接近于赢家通吃了，今年可能还再会掉队一家。 |\n| SPEECH | 52:23.4 | 52:31.1 | 2 | 认真 | 表达观点 | statement | all | - | 我觉得它其实反正就会慢慢进入一个大家都不能有绝对的短板，然后同时我们今年能看到说大家又越来越知道该怎么造车。 |\n| SPEECH | 52:31.5 | 52:36.4 | 2 | 认真 | 解释原因 | statement | all | - | 就是消费者到底需要什么，所以你会看到产品它其实越来越同质化。 |\n| SPEECH | 52:36.5 | 52:44.4 | 2 | 分析 | 深入阐述 | statement | all | - | 但是呢这里面还有我觉得三五年之间互相之间的领先差异，所以带来大家会优先选择一个我理想中我认知的一个品牌。 |\n| SPEECH | 52:44.4 | 52:51.9 | 2 | 分析 | 补充说明 | statement | all | - | 所以但但这种品牌它一定会有先发优势以及说它能保持销量，销量其实有可能在一段一个阶段内销量长红或者还不错。 |\n| SPEECH | 52:52.1 | 52:57.4 | 2 | 肯定 | 举例论证 | statement | all | - | 但你发现说呃很多车企尤其是你活到今天的这些车企，它其实有很强的自我迭代能力。 |\n| SPEECH | 52:57.7 | 53:04.7 | 2 | 思考 | 提出核心问题 | statement | all | - | 我们在回答说我是不是以后只剩下三五家品牌的时候，其实回答的是大家能不能有很好的软件管理能力。 |\n| SPEECH | 53:04.9 | 53:10.0 | 2 | 强调 | 总结观点 | statement | all | - | 就是究究竟智能化是不是以后的这个行业的最核心的一个竞争能力。 |\n| SPEECH | 53:10.2 | 53:19.7 | 2 | 举例 | 列举案例 | statement | all | - | 所以这个问题我觉得有待是这这两年的，就是我们看到像比亚迪对吧，比亚迪它建了一个非常大的一个智驾的团队，我们看到吉利极氪，极氪现在也在去推NZP。 |\n| SPEECH | 53:19.7 | 53:33.9 | 1 | 兴奋 | 表示认同并展开 | statement | 2 | 语速稍快/情绪高昂 | 哎对，你说这个我真的是认同，就是原来比如说很多人普遍觉得特斯拉刚做出来它的那个版本FSD的时候，大家有过分神话FSD，觉得噢它数据上已经领先了，算法上也领先了，体验上也领先了，用户越滚越大，数据越来越多，它应该越来越领先。 |\n| SPEECH | 53:34.1 | 53:40.3 | 1 | 自信 | 反驳观点 | statement | all | - | 后来你发现今天尤其是极和比亚迪这种教育，你真的有十万车载着硬件在跑，你真的就可以做智驾，对吧？ |\n| SPEECH | 53:40.4 | 53:45.3 | 1 | 强调 | 补充论据 | statement | all | - | 而且这个东西再叠加一些政策优势，哇数据必须本地管理，是吧，算法必须本国公司做。 |\n| SPEECH | 53:45.5 | 53:50.9 | 1 | 总结 | 得出结论 | statement | all | - | 那你七分八分的最后大家就是这样，就是特斯拉领先优势就是被消耗掉了。 |\n| SPEECH | 53:51.4 | 53:54.5 | 2 | 补充 | 增加细节 | statement | 1 | - | 而且你跑每一个城市，你跑每一个城市还要受每一个城市的... |\n| SPEECH | 53:54.5 | 53:54.9 | 1 | 附和 | 快速确认 | backchannel | 2 | 抢话/重叠 | 对对对对对。 |\n| SPEECH | 53:54.9 | 53:56.8 | 2 | 解释 | 继续说明 | statement | 1 | - | 你的审图是需要一个个城市过的。 |\n| SPEECH | 53:56.8 | 53:59.9 | 1 | 肯定 | 总结现象 | statement | all | - | 每不同城市训练出来智驾的性格是完全不同的。 |\n| SPEECH | 54:00.1 | 54:02.9 | 2 | 补充 | 提及政策 | statement | 1 | - | 那你每一个城市还掌管着上牌的一些对吧？ |\n| SPEECH | 54:02.9 | 54:03.6 | 1 | 附和 | 快速确认 | backchannel | 2 | 重叠 | 对对对对对。 |\n| SPEECH | 54:03.6 | 54:04.5 | 2 | 补充 | 继续说明 | statement | 1 | - | 上牌的一些政策。 |\n| SPEECH | 54:04.5 | 54:07.4 | 1 | 总结 | 概括因素 | statement | all | - | 上牌上路数据采集各种各样的东西，对。 |\n| SPEECH | 54:07.9 | 54:12.1 | 1 | 轻松 | 结束话题 | statement | all | - | 我觉得这期我们就聊到这里吧，我觉得最后的观念也挺牛逼的。 |\n| EVENT | 54:12.1 | 54:13.4 | - | - | - | - | - | - | 笑声 |\n| SPEECH | 54:13.7 | 54:17.0 | 2 | 幽默 | 调侃回应 | statement | 1 | 伴随笑声 | 我以为你最后要下一个理想不行的结论。 |\n| SPEECH | 54:17.0 | 54:22.4 | 1 | 轻松 | 澄清观点 | statement | all | - | 没有没有没有，理想很行，就是大家都行，我们都有所有的新势力都有光明的前途。 |\n| SPEECH | 54:22.6 | 54:28.4 | 1 | 热情 | 节目预告 | statement | all | - | 然后我们下一期车友talk是极氪的呃这个车友talk，我们希望大家期待好吧？ |\n| SPEECH | 54:28.7 | 54:30.1 | 1 | 礼貌 | 结束语 | statement | all | - | 那我们这期就到这里，谢谢大家。 |\n| EVENT | 54:30.4 | 54:31.4 | - | - | - | - | - | - | 掌声 |\n| SPEECH | 54:30.7 | 54:31.0 | 1 | 礼貌 | 告别 | statement | all | - | 拜拜。 |\n| SPEECH | 54:31.7 | 54:31.9 | 2 | 礼貌 | 回应 | statement | 1 | - | 好。 |\n| SPEECH | 54:32.5 | 54:34.1 | 1 | 好奇 | 提问 | question | 1 | - | 有没有收到过理想的律师函？ |\n| SPEECH | 54:34.2 | 54:34.8 | 3 | 轻松 | 回答 | answer | 2 | - | 没有没有没有。 |\n| SPEECH | 54:35.2 | 54:36.4 | 3 | 幽默 | 补充说明 | statement | 2 | - | 活动必请我。 |\n", "has_think": false, "render_mode": "tables"}, {"id": "bdaa9c1a881b", "tab": "Time → Content", "tab_zh": "时间到内容定位", "question": "在 **24:04** 是谁在说什么话，并解释这个说话人说这个话的目的，**给出原话依据**。", "think_md": "", "output_md": "24:04 是女嘉宾（行业观察者）在说话。\n\n她解释这个话的目的是为了**拓宽讨论的视角**，指出理想汽车的空间优势并非其独有，而是**整个新能源汽车行业（特别是电动车）在技术变革下带来的普遍性机会**。她认为，电动车短轴距和平底盘的特性，使得所有车企都能利用空间做文章，而不仅仅是理想一家。\n\n[原话依据]\n[24:04-24:17] 女嘉宾: 我觉得空间其实不完全是理想的问题，是现在新能源车电动车出现了之后，它带给这个行业的新的细分市场的定位发生变化的一个非常关键的点。因为今天我们看到大家其实做短悬，然后包括电动车底盘非常平。\n", "has_think": false, "render_mode": ""}, {"id": "22f4506afe7e", "tab": "Content → Time", "tab_zh": "内容到时间定位", "question": "音频中的女嘉宾什么时候开始指出理想汽车的空间优势并非其独有，而是整个新能源汽车行业（特别是电动车）在技术变革下带来的普遍性机会？\n\n**给出原话依据。**", "think_md": "", "output_md": "女嘉宾在大约 **24:03** 开始指出理想汽车的空间优势并非其独有，而是整个新能源汽车行业在技术变革下带来的普遍性机会。\n\n她的原话依据如下：\n\n```\n[24:03-24:17] 说话人 2: 我觉得空间其实不完全是理想的问题，是现在新能源车电动车出现了之后，它带给这个行业的新的细分市场的定位发生变化的一个非常关键的点。因为今天我们看到大家其实做短悬，然后包括电动车底盘非常平。\n[24:17-24:31] 说话人 2: 所以它本身就可以在车的空间上做很多的定位的东西。然后包括现在今天我们智能座舱的一个发展，所以所以它其实是不完全是理想五座六座七座现在这个细分市场的一个问题，它是整个电动车市场都发生了变化。\n```\n", "has_think": false, "render_mode": ""}, {"id": "4e7d6d16bf3f", "tab": "Cross-segment Analysis", "tab_zh": "跨段落分析", "question": "主持人全程以「理想黑」自居，但节目里他有没有被理想安利到，或说过什么让自己立场失守的话？\n\n**请帮我梳理主持人对于理想整个的态度脉络。**", "think_md": "", "output_md": "主持人全程以“理想黑”自居，但在节目中确实出现了立场的松动和失守，态度脉络呈现出从“理性审视”到“体验折服”再到“理性回归”的演变。\n\n**1. 开场：以“黑”自居，建立防御姿态**\n\n节目开场时，主持人明确表示自己是“顽固的理想黑”，并试图通过调侃嘉宾的穿着（像理想销售人员）和预设理想车主的“幻觉”来建立自己的批判立场。\n\n**2. 中段：体验折服，出现明显的“失守”信号**\n\n在节目中段，主持人分享了自己试驾理想L9的真实体验，这是其立场失守的关键节点：\n\n* **驾驶体验的“负体验”**：他直言在驾驶时“不幸福”，因为车“晃”、“刹不住”，这与他作为媒体人的专业判断一致。\n* **空间体验的“正反馈”**：然而，当他停车后坐在后排，特别是调整座椅后，发现看屏幕非常舒服，甚至觉得“体验特别好”。他提到在世界杯期间，这种体验让他觉得“不用打扰家人”，这种极致的家庭空间体验让他产生了共鸣。\n* **承认被安利**：在14:34左右，主持人明确承认自己“被他们安利到了”，并指出理想在产品定义上的过人之处，甚至认为“不按照营销链路，单纯从个人体验也能感受到理想的产品优势”。\n\n**3. 结尾：回归理性，保持批判性总结**\n\n尽管体验上有所折服，主持人在结尾处迅速回归理性，指出了理想的核心短板：\n\n* **操控性缺失**：他再次强调理想缺乏驾驶乐趣，底盘偏软，没有“开船的感觉”，与奔驰GLC的操控感形成鲜明对比。\n* **底层能力存疑**：在40:24左右，主持人提出理想“说不清楚除了产品定义，底层能力到底在哪里”，认为其缺乏像蔚来换电那样的网络效应或特斯拉的底层技术壁垒。\n\n**总结**：主持人的态度并非简单的“黑”或“粉”，而是「**体验折服但理性审视**」。他承认理想在空间和家庭场景下的产品定义能力极强，甚至被其打动，但依然坚持认为理想在驾驶质感和底层技术护城河上存在明显短板，保持了媒体人的客观立场。\n", "has_think": false, "render_mode": ""}, {"id": "90e7c574d90c", "tab": "Think Logical Reasoning", "tab_zh": "开 Think 逻辑推理", "question": "节目里程序员嘉宾用 **iPhone** 来类比理想的品牌竞争力——这个比喻，最终是帮理想说了好话，还是坏话？", "think_md": "用户问的是程序员嘉宾用 iPhone 类比理想品牌竞争力的比喻，最终是帮理想说了好话还是坏话。表面上看这是一个简单的态度判断，但陷阱在于这个比喻本身具有双重性——它既承认了理想的“堆料”和“性价比”，又暗示了它在底层技术上的“落后”。要回答这个问题，不能只看比喻的字面意思，得看嘉宾说完这个比喻后，主持人是怎么接话的，以及这个比喻在整个讨论逻辑里起到了什么作用。\n\n先整体感受一下这段音频。这是一段长达 50 多分钟的深度访谈，三位嘉宾围绕理想汽车的产品力、用户画像、品牌策略以及未来纯电转型进行了非常深入的探讨。整体氛围是理性探讨、轻松友好，偶尔有幽默调侃。粗听的关键就是把注意力锁定在讨论品牌心智和底层能力的那一段，特别是关于 iPhone 和安卓的类比，以及主持人随后的反驳和总结。\n\n细听。大概在 40 分 06 秒左右，程序员嘉宾（说话人 3）提到：“对，像 iPhone 大家经常吐槽功能不如五年前的安卓，很多人连安卓连试都懒得去试，不就是这么一个情况嘛。”紧接着，主持人（说话人 1）在 40 分 06 秒到 40 分 24 秒之间进行了反驳：“这个我觉得还不一样，就 iPhone 确实在底层技术上还是遥遥领先的……但是并不代表就是大家因为已经用惯了 iPhone 而选 iPhone。”随后主持人进一步分析理想的核心问题：“理想的核心没有解决的一个问题就是到今天为止我觉得理想还说不清楚除了产品整个产品定义方面，它底层能力到底在哪里。”\n\n开始分析。程序员嘉宾的比喻，核心逻辑是“功能不如但依然畅销”，这听起来像是在说理想虽然配置不如竞品，但依然有人买。但这真的是在帮理想说好话吗？仔细听主持人的反应，他并没有顺着这个比喻说“对，理想就像 iPhone，虽然配置不如安卓，但依然很成功”。相反，主持人明确指出了这个比喻的局限性，并提出了更深层的质疑：理想到底有没有像 iPhone 那样的“底层能力”？主持人认为理想的核心问题在于“说不清楚除了产品定义外，底层能力到底在哪里”。这说明，嘉宾的比喻虽然指出了理想的市场表现，但在逻辑上并没有帮理想建立起真正的护城河。主持人的反驳实际上是在拆解这个比喻的正面意义，转而强调理想在底层技术上的缺失。\n\n等等，我上面是不是太绝对了？嘉宾说“很多人连安卓连试都懒得去试”，这难道不是在说理想的品牌粘性很强吗？再仔细想想，嘉宾的原话是“像 iPhone 大家经常吐槽功能不如五年前的安卓”，这其实是在承认 iPhone 的“堆料”和“体验”不如安卓，但依然有人买。这确实是在说理想的市场表现。但是，主持人紧接着的“但是并不代表就是大家因为已经用惯了 iPhone 而选 iPhone”以及随后的“理想的核心没有解决的一个问题就是……底层能力到底在哪里”，是在把这个比喻拉回到更本质的竞争层面。也就是说，嘉宾的比喻虽然描述了现象，但并没有解决本质问题。主持人的反驳实际上是在说：光靠品牌粘性和堆料是不够的，理想必须解决底层能力的问题。所以，这个比喻在逻辑上并没有帮理想说好话，反而暴露了理想在底层能力上的短板。\n\n收一下要点：程序员嘉宾用 iPhone 类比理想，意在说明理想虽然功能不如竞品，但依然有强大的品牌粘性。但这个比喻并没有帮理想说好话，因为主持人随后反驳了这个比喻，指出理想的核心问题在于缺乏像 iPhone 那样的“底层能力”。主持人的反驳实际上是在拆解这个比喻的正面意义，转而强调理想在底层技术上的缺失。因此，这个比喻最终并没有帮理想说好话，反而暴露了理想在底层能力上的短板。\n\n自检。证据层：嘉宾的比喻和主持人的反驳都在音频中有明确的时间锚点，没有幻听。逻辑层：核心推理是“比喻描述了现象，但主持人的反驳指出了本质问题”，中间对比喻的正面意义做了一次校准，不是形式反证，是真的想过替代解释才排除的；嘉宾的比喻确实描述了现象，但主持人的反驳指出了本质问题。覆盖层：回答是“没有帮理想说好话”，并列举了嘉宾的比喻和主持人的反驳，让答案可核查；而且全程没有编造任何数字/事实。可以答。\n", "output_md": "这个比喻最终并没有帮理想说好话，反而暴露了理想在底层能力上的短板。\n\n程序员嘉宾（说话人 3）在 40:06 左右用 iPhone 类比理想，意在说明理想虽然功能不如竞品，但依然有强大的品牌粘性。但主持人（说话人 1）随后反驳了这个比喻，指出理想的核心问题在于缺乏像 iPhone 那样的“底层能力”。主持人的反驳实际上是在拆解这个比喻的正面意义，转而强调理想在底层技术上的缺失。\n\n```\n[原话依据]\n[40:06-40:15] 说话人 3: 对，像 iPhone 大家经常吐槽功能不如五年前的安卓，很多人连安卓连试都懒得去试，不就是这么一个情况嘛。\n[40:15-40:24] 说话人 1: 这个我觉得还不一样，就 iPhone 确实在底层技术上还是遥遥领先的，包括各种硬的指标啊软的指标，只是说它有些营销的显性配置上可能还不如安卓做得好，但是并不代表就是大家因为已经用惯了 iPhone 而选 iPhone。\n[40:24-40:32] 说话人 1: 我觉得理想的核心没有解决的一个问题就是到今天为止我觉得理想还说不清楚除了产品整个产品定义方面，它底层能力到底在哪里。\n```\n", "has_think": true, "render_mode": ""}]}, "sections": [{"id": "summarization", "title": "Audio Understanding Across Various Domains", "render_mode": "", "cases": [{"id": "dc735af3fca8", "title": "Film/TV Clip Summary", "question": "尽可能详细地总结这个音频", "think_md": "", "output_md": "### 全局叙事概览\n\n这段音频呈现了一部极具张力的古风奇幻广播剧片段，时长约111秒。故事围绕一群策划潜入“福禄寿三星”地下藏宝阁的凡人盗贼展开。剧情从主角团密谋假扮神仙、利用“有求必应”法则的漏洞进行盗窃开始，穿插了关于“扒手”与“扒衣服”的文字游戏误会，以及盗贼们面对神秘神仙时的惊恐与推脱。随着剧情推进，盗贼们意外挖出宝物，却惊动了真正的看守者，双方随即爆发激烈的打斗。最终，盗贼团伙在混乱中达成“下半辈子财务自由”的共识，并在高潮中向观众抛出悬念，暗示他们手中握有比三星更珍贵的秘密。整段音频通过紧凑的对话、丰富的音效和激昂的背景音乐，营造出一种紧张、幽默且充满戏剧性的冒险氛围。\n\n### 场景分段详解\n\n**[0s - 17s] 密谋与法则揭秘**\n音频以激昂的古风管弦乐开场，主角（策划者）冷静地提出一个赚快钱的计划：在福禄寿三星的地下藏宝阁挖掘赃款。团队成员迅速响应，确认已准备好。主角详细阐述了计划的核心：假扮神仙，经营道观，通过挖掘地道直达三星藏宝阁。此时，背景音效中加入了神秘音效，暗示着某种超自然力量的介入。\n\n**[17s - 26s] 神仙法则与身份危机**\n对话转向对神仙规则的探讨。团队成员解释，神仙有一条“有求必应”的法则。当主角询问在蓬莱假扮神仙是什么罪时，另一名成员惊恐地回答是“死罪”。主角随即领悟，告诫大家“不要让人许愿”，因为一旦许愿，神仙法则就会启动，带来不可控的后果。这一段落通过对话揭示了计划背后的巨大风险。\n\n**[26s - 47s] 身份误会与推脱**\n剧情出现转折，一名成员惊慌地呼喊“大神等一下”，随后传来轻蔑的笑声。主角惊讶于盗贼被迅速抓获，而团队成员则得意地表示，第二天神仙就帮他们办了事。主角调侃地询问这是否是“抓扒手的神仙”，并故意曲解“扒”字为“扒衣服”。面对主角的调侃，团队成员焦急地推脱，强调自己是凡人，真的不灵，试图摆脱与神仙的关联。\n\n**[47s - 60s] 冲突爆发与神仙降临**\n气氛骤然紧张，一名成员愤怒地喝止“站住”，背景音效中出现了混乱的打斗声和人群惊呼。主角威严地命令大家“站起来，不准跪”，显示出其领导地位。团队成员则恐惧地呼喊“神仙大人”，主角无奈地抱怨对方之前还说不准跪。此时，一名成员惊恐地惊呼“雷子哥”，暗示有强大的外力介入。\n\n**[60s - 76s] 挖掘与神秘人现身**\n主角疲惫地询问还要挖多久，团队成员困惑地反问挖什么。主角兴奋地喊出“挖！”，随后一名神秘老者声音威严地出现，自称是“老爷”，并质问众人是否是“蓬莱八仙”。老者声音低沉且带有混响，营造出压迫感。团队成员警惕地低语，准备应对。\n\n**[76s - 94s] 委托与战斗高潮**\n神秘老者严肃地委托主角团，称藏宝阁有重要宝贝被贼人觊觎，请求他们明日务必守住藏宝阁。主角团听后，一名成员豪迈地宣言，下半辈子的财务自由就看明天了，并霸气挑衅“我看谁敢拦着我发财”。此时，背景音效达到高潮，伴随着激烈的兵器碰撞声和爆炸声，战斗全面爆发。\n\n**[94s - 111s] 悬念收尾**\n在激烈的战斗音效后，音频进入长静音。最后，主角以低沉且充满悬念的语气独白：“谁要这个宝贝，你们知道吗？”为整个故事留下巨大的悬念，暗示他们手中的宝贝可能远超三星藏宝阁的价值。\n\n### 角色与声音特质\n\n*   **主角/策划者（说话人1）**：男性，成年，普通话。声音沉稳有力，略带狡黠。在密谋时冷静自信，在冲突中威严果断，在结尾时低沉神秘。他是整个计划的核心推动者。\n*   **团队成员（说话人2）**：男性，成年，普通话。声音活泼急促，情绪多变。从最初的兴奋响应，到中间的惊恐推脱，再到最后的豪迈宣言，展现了其性格中的冲动与热血。\n*   **团队成员（说话人3）**：男性，成年，普通话。声音憨厚粗犷，偶尔惊慌。在对话中常表现出对后果的恐惧和对规则的无知，是团队中的“气氛组”和“吐槽担当”。\n*   **团队成员（说话人4）**：男性，成年，普通话。声音惊恐颤抖。在关键时刻表现出极度的恐惧，如呼喊“大神等一下”和“雷子哥”，增强了剧情的紧张感。\n*   **神秘老者（说话人5）**：男性，老年，普通话。声音低沉威严，带有混响效果。他的出现标志着剧情从密谋转向冲突，其威严的语气和压迫感的声线，使其成为剧情中的关键反派或权威角色。\n\n### 主题与情感弧线\n\n音频的情感弧线从**密谋的紧张**开始，经过**幽默的误会**和**恐惧的推脱**，迅速攀升至**冲突的激烈**，最终以**悬念的深沉**收尾。主题上，它探讨了贪婪、命运与规则的博弈。主角团试图利用规则漏洞获利，却意外卷入更深的漩涡。神秘老者的委托揭示了更大的阴谋，而主角最后的独白则暗示了利益背后的更深层秘密，引发听众对“宝贝”真实价值的想象。\n\n### 音乐、音效与环境氛围\n\n*   **背景音乐**：全程伴随激昂的古风管弦乐，节奏紧凑，与对话情绪高度同步。在战斗高潮部分，音乐节奏加快，音量增强，营造出史诗般的紧张感。\n*   **音效**：音效运用极为丰富，包括风声、重音、打斗声、爆炸声、人群惊呼、雷声等。特别是“雷子哥”的惊呼，配合音效，增强了神秘感和冲击力。\n*   **环境氛围**：从最初的密室密谋的压抑，到中途的混乱打斗的喧嚣，再到结尾的寂静悬念，环境氛围的变化极大地增强了叙事的层次感。\n", "audio_url": "", "render_mode": "", "video_url": "https://www.xiaohongshu.com/explore/6a6ff62e00000000330187c6?xsec_token=ABvX-7xh-uqEzuMs2hBJ2XcHALOEh9o7tJSGpoyegaxLo=&xsec_source=pc_search&source=web_search_result_notes", "video_link_label": "小红书 · 电影八仙预告"}, {"id": "9f35323d2c77", "title": "Music Analysis", "question": "# Role\n你是一位精通音乐声学和音频信号处理的资深音乐评论家。你的任务是对一段给定的音频片段进行深度赏析。\n\n# Critical Constraints (必须严格遵守)\n1. **仅基于听觉**：所有分析必须严格基于音频中可感知的声学特征（Acoustic Features）。\n2. **客观描述为主**：优先描述“听到了什么”，其次才是“给人的感受”。\n\n# Analysis Dimensions (分析维度)\n\n请从以下几个维度对音频进行结构化分析：\n\n## 1. 音色与质感 (Timbre & Texture)\n- **人声特征**：描述演唱者的音色（如：沙哑、清亮、厚重、气声多）、音域范围、发声方式（如：假声、嘶吼、念白式演唱）。\n- **乐器音色**：识别主要乐器的类型（如：失真吉他、合成器Pad、原声钢琴、鼓组）及其音质特点（如：温暖、冰冷、粗糙、纯净）。\n- **空间感**：描述混响（Reverb）、延迟（Delay）的使用情况，以及声场的宽窄、干湿比例。\n\n## 2. 节奏与律动 (Rhythm & Groove)\n- **速度与节拍**：估算大致的 BPM 范围，判断节拍类型（如：4/4拍、切分音复杂、自由节奏）。\n- **律动感**：描述节奏的紧密程度（Tight/Loose）、摇摆感（Swing）、是否具有较强的舞蹈性或驱动感。\n- **动态变化**：节奏部分在不同段落的强弱变化和复杂度演进。\n\n## 3. 旋律与和声 (Melody & Harmony)\n- **旋律线条**：描述主旋律的走向（如：级进为主、大跳频繁、重复性强）、记忆点（Hook）的特征。\n- **和声色彩**：分析和声进行的紧张度与解决感（如：和谐稳定、不协和爵士感、小调忧郁、大调明亮）。注意：如果无法精确判断和弦，请描述整体的情感色彩。\n\n## 4. 结构与编排 (Structure & Arrangement)\n- **段落划分**：根据能量变化、乐器增减，划分音频的结构（如：前奏、主歌、副歌、桥段、尾奏）。\n- **层次感**：分析不同频段（低、中、高）的乐器分布，是否存在频率掩蔽或清晰的分离度。\n- **动态起伏**：描述整首曲子的情绪曲线和能量 buildup/release 过程。\n\n## 5. 情感氛围与美学评价 (Emotional Atmosphere & Aesthetic)\n- **情绪基调**：基于上述声学特征，总结音频传达的核心情绪（如：焦虑、宁静、激昂、孤独、欢快）。\n- **制作水准**：评价录音质量、混音平衡度、动态范围控制等技术层面。\n- **整体印象**：用富有诗意的语言总结这段音频带来的独特听觉体验。\n\n# Output Format\n请以 Markdown 格式输出，结构清晰，语言专业且优美。避免使用模糊的形容词，尽量使用具体的声学描述词汇。", "think_md": "", "output_md": "# 音频深度赏析报告\n\n## 1. 音色与质感 (Timbre & Texture)\n\n*   **人声特征**：\n    *   **音色质感**：演唱者为一位女性歌手，音色清亮甜美，具有极高的辨识度。声音质感细腻，带有明显的“气声”（breathy voice）特质，使得演唱听起来柔和且富有呼吸感，避免了过于干涩或厚重的听感。\n    *   **音域与发声**：音域主要集中在中高音区，发声方式以真声与假声的自然过渡为主，咬字清晰但处理得较为轻柔，符合古风流行歌曲的审美需求。\n    *   **情感表达**：通过气息的控制，人声在“深情”与“激昂”之间切换自如，特别是在副歌部分，声音的穿透力增强，但仍保持圆润的质感。\n\n*   **乐器音色**：\n    *   **传统乐器**：古筝（Guzheng）的音色清脆、颗粒感强，作为前奏和间奏的核心元素，提供了鲜明的东方色彩。笛子（Dizi）音色空灵、悠远，常用于旋律的点缀，营造出山水意境。\n    *   **现代乐器**：钢琴音色温暖而清晰，主要承担和声铺垫的功能；鼓组（Drums）节奏紧凑，底鼓（Kick）和军鼓（Snare）的力度适中，提供了稳定的现代流行节奏骨架；贝斯（Bass）低沉厚实，填补了低频空间。\n    *   **合成器**：背景中隐约可见合成器（Synthesizer）的铺底，增加了声音的空间感和现代感，但未掩盖传统乐器的主体地位。\n\n*   **空间感**：\n    *   **混响与延迟**：混响（Reverb）使用得当，为人声和乐器提供了适度的空间感，使其听起来不贴耳也不空旷。延迟（Delay）效果在人声尾音和乐器长音中轻微使用，增加了声音的层次和余韵。\n    *   **声场宽度**：声场较为宽广，古筝和笛子分布在左右声道，钢琴和鼓组居中，形成了良好的立体声像分布，听感开阔。\n\n## 2. 节奏与律动 (Rhythm & Groove)\n\n*   **速度与节拍**：\n    *   整体速度约为 125-130 BPM，属于中快板（Medium-fast tempo）。节拍为标准的 4/4 拍，节奏稳定且富有驱动力。\n    *   鼓组的节奏型规整，底鼓与军鼓的配合紧密，没有复杂的切分音，使得律动易于跟随。\n\n*   **律动感**：\n    *   律动感偏向于“流行摇滚”风格，具有一定的舞蹈性。主歌部分节奏相对舒缓，副歌部分节奏密度增加，鼓点更加密集，增强了歌曲的推进感。\n    *   没有明显的摇摆感（Swing），而是以直白的流行节奏为主，强调重拍的清晰度。\n\n*   **动态变化**：\n    *   节奏部分在不同段落有细微的动态变化。主歌部分鼓组力度较轻，突出人声；副歌部分鼓组力度增强，配合人声的高音，形成能量爆发。间奏部分节奏暂时简化，突出古筝和笛子的旋律线条。\n\n## 3. 旋律与和声 (Melody & Harmony)\n\n*   **旋律线条**：\n    *   主旋律以级进为主，偶尔出现大跳，旋律线条流畅且易于记忆。副歌部分旋律起伏较大，情感表达更为强烈，形成了明显的记忆点（Hook）。\n    *   歌词内容涉及“风流少年”、“山海诗篇”、“红尘”等意象，旋律与之相配合，营造出一种浪漫而略带忧伤的氛围。\n\n*   **和声色彩**：\n    *   和声进行以传统流行音乐的和弦进行为基础，如 C-Dm7-G-Am 等，色彩和谐稳定。\n    *   在副歌部分，和声色彩略有变化，增加了紧张度与解决感的对比，增强了情感的张力。整体听感偏向大调的明亮与小调的忧郁交织，符合古风歌曲的情感基调。\n\n## 4. 结构与编排 (Structure & Arrangement)\n\n*   **段落划分**：\n    *   **前奏 (0:00-0:17)**：以古筝独奏引入，随后加入笛子和钢琴，营造意境。\n    *   **主歌 1 (0:17-0:31)**：人声进入，伴奏相对简单，突出人声叙事。\n    *   **主歌 2 (0:31-0:45)**：伴奏逐渐丰富，加入鼓组，情绪开始铺垫。\n    *   **副歌 1 (0:45-1:00)**：全乐队进入，能量爆发，旋律高亢。\n    *   **副歌 2 (1:00-1:15)**：延续副歌情绪，歌词略有变化。\n    *   **间奏 (1:15-1:31)**：乐器独奏，古筝与笛子交织，提供情绪缓冲。\n    *   **主歌 3 (1:31-1:45)**：人声再次进入，伴奏回归简洁。\n    *   **副歌 3 (1:45-2:00)**：情绪再次推高，与第一次副歌形成呼应。\n    *   **副歌 4 (2:00-2:15)**：歌词微调，情感更加深沉。\n    *   **副歌 5 (2:15-2:30)**：高潮部分，人声与乐器达到最强力度。\n    *   **尾奏 (2:30-3:10)**：乐器逐渐退出，最后以钢琴和古筝的余音结束，渐弱至无声。\n\n*   **层次感**：\n    *   低频（贝斯、底鼓）扎实，中频（人声、钢琴、古筝）清晰，高频（笛子、镲片）明亮但不刺耳。各频段乐器分布合理，没有明显的频率掩蔽现象，分离度良好。\n\n*   **动态起伏**：\n    *   整首曲子的情绪曲线呈波浪形，从平静的引入，到主歌的叙事，副歌的爆发，间奏的舒缓，再到最后的升华与消退。动态范围控制得当，既有强烈的对比，又保持了整体的连贯性。\n\n## 5. 情感氛围与美学评价 (Emotional Atmosphere & Aesthetic)\n\n*   **情绪基调**：\n    *   整体情绪基调为“深情”与“激昂”交织。主歌部分流露出淡淡的忧伤和怀旧感，副歌部分则充满激情和力量，传达出一种对过往岁月的追忆和对理想境界的向往。\n\n*   **制作水准**：\n    *   录音质量清晰，动态范围控制良好，混音平衡度优秀。传统乐器与现代乐器的融合自然，没有突兀感，体现了较高的制作水准。\n\n*   **整体印象**：\n    *   这是一首制作精良的古风流行歌曲，通过现代流行音乐的制作手法，成功融合了传统中国乐器的韵味。人声清亮甜美，旋律流畅动人，节奏稳健有力，情感表达丰富细腻。整首曲子营造出一种既古典又现代的听觉体验，既有山水诗意的宁静，又有红尘烟火的热烈，给听众带来强烈的沉浸感和情感共鸣。\n", "audio_url": "", "render_mode": "", "video_url": "https://www.xiaohongshu.com/explore/67aacad2000000001902dabf?xsec_token=ABi21xsxwcB2n_-r_B1jRobmlUOjINs7lUtjpLZMyMcdM=&xsec_source=pc_search&source=web_search_result_notes", "video_link_label": "小红书 · 古风歌曲"}, {"id": "49a92c092411", "title": "Long-form Podcast Summary", "question": "# Role\n你是一位拥有深厚语言学背景和敏锐洞察力的资深播客编辑。你的任务是对一段长音频进行深度聆听，并输出一份**精炼、逻辑清晰、重点突出**的自然语言总结报告。\n\n# Goal\n在不丢失关键信息的前提下，将冗长的对话浓缩为易于阅读的文本。重点在于还原对话的逻辑脉络，而非逐字转录。\n\n# Critical Constraints\n1. **禁止 JSON/代码格式**：输出必须是流畅的自然语言段落和列表。\n2. **说话人明确**：必须清晰标注不同说话人的观点。如果不知道真实姓名，请根据角色赋予标签（如：主持人、嘉宾A、嘉宾B），并在首次出现时简要描述其音色或身份特征。\n3. **去口语化**：剔除所有的语气词、重复、废话和无关寒暄，只保留实质性内容。\n4. **客观中立**：忠实于原文观点，不添加外部知识或个人评判。\n\n# Output Structure (请严格按此结构输出)\n\n## 1. 📋 节目概览 (Overview)\n- **核心主题**：用一句话概括本期播客讨论的核心议题。\n- **参与人员**：列出所有主要说话人，并简要描述其角色（如：主持人-声音沉稳、引导节奏；嘉宾-语速较快、观点犀利）。\n- **整体基调**：描述对话的氛围（如：轻松幽默、严肃学术、激烈辩论等）。\n\n## 2. 💡 核心观点摘要 (Key Insights)\n*请按逻辑顺序或重要性，提炼 3-5 个核心观点。每个观点需包含：*\n- **观点标题**：简练概括。\n- **详细阐述**：结合具体说话人的论述进行解释。例如：“嘉宾A认为……，他通过……案例进行了佐证；主持人随后补充了……视角。”\n- **关键时间戳**：在该观点附近标注大致时间（如：[12:30]），方便回溯。\n\n## 3. 🗣️ 精彩对话/金句摘录 (Highlights)\n*选取 3-5 段最具代表性、洞察力或趣味性的原话片段：*\n- **[说话人标签]**：“引用原话...” （[时间戳]）\n- **[说话人标签]**：“引用原话...” （[时间戳]）\n\n## 4. 📝 逻辑脉络梳理 (Narrative Flow)\n*用一段连贯的文字，简述整个对话的起承转合：*\n- 对话是如何开始的？\n- 中间经历了哪些话题转换或冲突？\n- 最后达成了什么共识或留下了什么开放性问题？\n\n# Tone & Style\n- **专业且易读**：使用书面语，但保持亲切感，避免过于晦涩的学术词汇。\n- **精炼**：避免冗余修饰，直击要点。\n- **结构化**：合理使用加粗、列表和分段，提升阅读体验。", "think_md": "", "output_md": "## 1. 📋 节目概览 (Overview)\n- **核心主题**：主持人闫鹤翔与嘉宾刘洋在房车录制播客，深入探讨喜剧演员的“努力与天赋”、“内卷”心态、创作方法论以及个人生活感悟。\n- **参与人员**：\n  - **主持人（闫鹤翔）**：声音中低音，沉稳亲切，引导话题，分享自身经历与行业观察。\n  - **嘉宾（刘洋）**：声音中音，语速较快，表达流畅且富有感染力，观点犀利，擅长用幽默化解严肃话题。\n- **整体基调**：轻松幽默、真诚坦率，兼具深度思考与行业洞察，氛围友好且充满共鸣。\n\n## 2. 💡 核心观点摘要 (Key Insights)\n- **观点标题：努力是喜剧演员的底线，但天赋与结果并非绝对正相关**\n  - **详细阐述**：刘洋通过计算职业单口喜剧演员每年需进行400-700场有效开放麦练习，强调刻意练习的重要性。他坦言自己曾追求极致努力（如一天赶六场开放麦），但也意识到努力与结果不成正比，许多努力的人并未获得同等回报。闫鹤翔补充认为，努力是必须的，但不应盲目相信“努力即成功”的等号，而应相信努力本身的价值。\n  - **关键时间戳**：[24:48] - [25:46]\n\n- **观点标题：拒绝“贩卖努力”，以“避称”心态面对评价与创作**\n  - **详细阐述**：刘洋指出，外界常指责他“太卷”、“贩卖努力”，但他认为被记住是荣幸，风格被误解好过被忽视。他提出“避称”概念，即在努力过程中避免过度紧绷，因为过度紧绷会导致结果变差。他通过自己播客接梗质量的提升，说明理性批评需转化为内在意识，而非仅听表面药方。\n  - **关键时间戳**：[16:20] - [17:10]\n\n- **观点标题：遗憾的本质是未关注当下，创作源于真实情感而非宏大叙事**\n  - **详细阐述**：刘洋分享创作《奈何桥》的契机，源于对奶奶阿尔兹海默症的遗憾，意识到遗憾往往是小而真实的事（如没约上饭、没碰杯）。他强调喜剧的核心是打动观众，而非教育或说教，真实的情感（如弥留之际只说好消息）最能引起共鸣。\n  - **关键时间戳**：[38:02] - [40:32]\n\n- **观点标题：焦虑与不安是存在的证明，需与自我和解**\n  - **详细阐述**：两人共鸣于“焦虑是我活着的证据”。刘洋认为，努力是为了让自己心安，因为不努力总觉得失败源于自己。他提出“原谅自己”的方法论：逼自己一把，没做成就赶紧干下一件，允许失败，从而释怀。\n  - **关键时间戳**：[21:52] - [31:13]\n\n## 3. 🗣️ 精彩对话/金句摘录 (Highlights)\n- **[嘉宾]**：“你努力你凭什么努力？你讨厌我特别烦看到你这种人。然后他们就会骂你，就会攻击你，就说你看你努力的也不也就这德行吗？” （[16:20]）\n- **[嘉宾]**：“听批评和听夸奖都不会让人进步，尤其不会在创作方面让人进步。进步的永远是你的眼和手之间的差，这个差越大你越能进步。” （[17:50]）\n- **[嘉宾]**：“努力是为了让自己舒服心安，因为不努力你总觉得失败的原因就是自己没努力，努力还不够。但是要原谅自己。” （[30:33]）\n- **[嘉宾]**：“Don't Panic（别慌）。意思是，你别慌，接下来你要展开一个极为难以想象的伟大的世界了，就你要见的东西太多了。” （[49:04]）\n\n## 4. 📝 逻辑脉络梳理 (Narrative Flow)\n对话始于两人对社交习惯的共鸣，引出MBTI性格分析，随后自然过渡到刘洋的“内卷”状态与创作现状。刘洋详细阐述了其对“努力”与“天赋”的看法，通过大量开放麦练习的案例，强调刻意练习的重要性，同时坦诚努力与结果的非线性关系。他进一步提出“避称”心态，以应对外界评价与创作压力，并分享了通过“原谅自己”来化解焦虑的方法论。话题随后转向作品《奈何桥》的创作初衷，刘洋从个人遗憾出发，探讨了真实情感在喜剧中的核心地位。最后，对话延伸至育儿与家庭，刘洋以《银河系漫游指南》中的“Don't Panic”作为结尾寄语，表达了对未来世界的期待与从容。\n", "audio_url": "", "render_mode": "", "video_url": "https://www.xiaohongshu.com/explore/69e84dad00000000220279fe?xsec_token=ABNjuOUnA5_7sQ65k-DMgEtP6BmwNYn4YBTc8PA9CzyA4=&xsec_source=pc_search&source=web_explore_feed", "video_link_label": "小红书 · 阎途说播客"}, {"id": "14c3132413c4", "title": "Long-form Ambient Sound Recognition", "question": "详细总结这个音频，为不同音效标注时间戳", "think_md": "", "output_md": "【0.0-3.4 秒】喷气式飞机或高速列车高速掠过，声音由远及近再远去，呈现明显的多普勒效应，音量先骤增后渐弱，音色尖锐且带有强烈的气流撕裂感。\n【3.4-7.2 秒】大量水流急速冲刷或倾泻而下，声音持续且响亮，伴有密集的水花飞溅声，频率宽广，具有强烈的流动感和冲击力。\n【7.2-10.8 秒】远处传来沉闷的雷声，低频隆隆作响，音量由弱渐强再缓慢衰减，音色浑厚深沉，无明显回响，表现出远距离传播特征。\n【10.8-14.6 秒】水龙头快速流水声，水流稳定且连续，中高频成分突出，音量中等偏上，无波动，呈现典型的室内用水场景特征。\n【14.6-15.1 秒】第一滴水落入容器，发出清脆短促的“滴”声，音调较高，瞬态明显，随后迅速归于寂静。\n【15.1-15.6 秒】第二滴水落入容器，声学特征与前一滴高度相似，间隔约 0.5 秒，保持节奏一致性。\n【15.6-16.1 秒】第三滴水落入容器，同样为清亮单音，持续时间极短，背景完全静默，凸显水滴的孤立性。\n【16.1-17.2 秒】短暂静音期，仅存极低环境底噪，无任何主动声源活动。\n【17.2-20.9 秒】高压水枪或强力喷淋装置持续喷射，声音尖锐刺耳，伴随高频嘶嘶声与湍流噪声，音量极大且稳定，具有明显金属质感与方向性。\n【20.9-24.7 秒】烈火猛烈燃烧，包含持续的噼啪爆裂声与低沉的呼呼风声，音量起伏不定，频率覆盖中低频至高频，表现出火势旺盛且不稳定的状态。\n【24.7-27.6 秒】塑料包装袋被反复揉搓挤压，发出密集、干燥、高频的沙沙声与脆响，音量时强时弱，呈现不规则的动态变化。\n【27.6-31.4 秒】暴雨倾盆而下，雨点密集撞击地面或屋顶，形成连续厚重的白噪声背景，夹杂偶尔的低频轰鸣，整体音量极高且恒定。\n", "audio_url": "", "render_mode": "", "video_url": "https://www.xiaohongshu.com/explore/686e535a000000000d025c50?xsec_token=ABcpv0YX1CBYYU2Gcm_eKqcpBr-Zl9H6fjb4zA4bBQXnw=&xsec_source=pc_search&source=web_explore_feed", "video_link_label": "小红书 · 自然界声音"}]}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('demo-data').textContent);
+const THRESH = DATA.long_question_threshold || 180;
+const PROMPT_COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const promptStore = new Map();
+let promptStoreSeq = 0;
+
+function compactPrompt(q) {
+  if (!q) return q;
+  return String(q).trim();
+}
+
+function storePromptText(text) {
+  const id = `prompt-${++promptStoreSeq}`;
+  promptStore.set(id, String(text || ''));
+  return id;
+}
+
+function readPromptFromBubble(bubble) {
+  const id = bubble.getAttribute('data-prompt-id') || '';
+  return promptStore.get(id) || '';
+}
+
+async function copyPromptText(text, btn) {
+  const value = String(text || '');
+  let copied = false;
+
+  if (value && navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(value);
+      copied = true;
+    } catch (_) {}
+  }
+
+  if (!copied && value) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = value;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '0';
+      ta.style.left = '0';
+      ta.style.width = '2em';
+      ta.style.height = '2em';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, value.length);
+      copied = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (_) {}
+  }
+
+  if (!copied) return;
+
+  btn.classList.add('copied');
+  btn.title = 'Copied';
+  btn.setAttribute('aria-label', 'Copied');
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.title = 'Copy prompt';
+    btn.setAttribute('aria-label', 'Copy prompt');
+  }, 1600);
+}
+
+function wirePromptCopyButtons(container) {
+  if (!container) return;
+  container.querySelectorAll('.user-prompt-bubble').forEach(bubble => {
+    const text = readPromptFromBubble(bubble);
+    bubble.querySelectorAll('.prompt-copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        copyPromptText(text, btn);
+      });
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderMarkdown(md) {
+  if (window.marked) {
+    marked.setOptions({ breaks: true, gfm: true });
+    return marked.parse(md || '');
+  }
+  return `<pre style="white-space:pre-wrap">${escapeHtml(md || '')}</pre>`;
+}
+
+function enhanceTables(container) {
+  if (!container) return;
+  container.querySelectorAll('.md-body table').forEach(tbl => {
+    const wrap = document.createElement('div');
+    wrap.className = 'table-scroll-wrap';
+    tbl.parentNode.insertBefore(wrap, tbl);
+    wrap.appendChild(tbl);
+    const cols = tbl.querySelectorAll('tr:first-child th, tr:first-child td').length;
+    if (cols > 6) tbl.classList.add('table-wide');
+  });
+}
+
+function renderChatMessages(caseData, opts = {}) {
+  const showMedia = opts.showAudio !== false;
+  const videoOnly = opts.videoOnly === true;
+  const audioUrl = opts.audioUrl || caseData.audio_url || '';
+  const videoUrl = opts.videoUrl || caseData.video_url || '';
+  const parts = [];
+
+  const promptRaw = caseData.question || '';
+  const promptId = storePromptText(promptRaw);
+  parts.push(`<div class="chat-msg user">
+    <div class="chat-avatar">U</div>
+    <div class="chat-bubble user-prompt-bubble" data-prompt-id="${escapeHtml(promptId)}">
+      <button type="button" class="prompt-copy-btn prompt-copy-top" title="Copy prompt" aria-label="Copy prompt">${PROMPT_COPY_ICON}</button>
+      <div class="md-body user-prompt-md">${renderMarkdown(compactPrompt(promptRaw))}</div>
+    </div>
+  </div>`);
+
+  if (showMedia && videoUrl) {
+    const linkLabel = caseData.video_link_label || '小红书 · 原视频来源';
+    if (isExternalPageLink(videoUrl) && !isDirectMediaUrl(videoUrl)) {
+      parts.push(`<div class="chat-msg audio">
+      <div class="chat-avatar" style="visibility:hidden">·</div>
+      <div class="chat-bubble">
+        <div class="showcase-media-link-row"><span class="showcase-media-hint">点击播放</span><a class="showcase-media-link" href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkLabel)}</a></div>
+      </div>
+    </div>`);
+    } else {
+      parts.push(`<div class="chat-msg audio">
+      <div class="chat-avatar" style="visibility:hidden">·</div>
+      <div class="chat-bubble">
+        <video class="chat-case-video" controls playsinline preload="metadata"><source src="${escapeHtml(videoUrl)}" type="video/mp4"/></video>
+      </div>
+    </div>`);
+    }
+  } else if (showMedia && audioUrl && !videoOnly) {
+    parts.push(`<div class="chat-msg audio">
+      <div class="chat-avatar" style="visibility:hidden">·</div>
+      <div class="chat-bubble">
+        <audio controls preload="metadata" class="chat-audio" src="${escapeHtml(audioUrl)}"></audio>
+      </div>
+    </div>`);
+  }
+
+  if (caseData.think_md) {
+    parts.push(`<div class="chat-msg think">
+      <div class="chat-avatar">F</div>
+      <div class="chat-bubble">
+        <div class="think-label">Thinking</div>
+        <div class="md-body">${renderMarkdown(caseData.think_md)}</div>
+      </div>
+    </div>`);
+  }
+
+  parts.push(`<div class="chat-msg model">
+    <div class="chat-avatar">F</div>
+    <div class="chat-bubble"><div class="md-body">${renderMarkdown(caseData.output_md)}</div></div>
+  </div>`);
+
+  return parts.join('');
+}
+
+function isDirectMediaUrl(url) {
+  return /\.(mp4|webm|m4a|wav|mp3|ogg)(\?|#|$)/i.test(String(url || ''));
+}
+
+function isExternalPageLink(url) {
+  const u = String(url || '');
+  return u.startsWith('http://') || u.startsWith('https://');
+}
+
+function renderPinnedMedia(url, label) {
+  if (!url) return { html: '', isLinkRow: false };
+  if (isExternalPageLink(url) && !isDirectMediaUrl(url)) {
+    return {
+      html: `<span class="showcase-media-hint">点击播放</span><a class="showcase-media-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label || '小红书 · 原视频来源')}</a>`,
+      isLinkRow: true,
+    };
+  }
+  if (/\.(mp4|webm)(\?|#|$)/i.test(url)) {
+    return {
+      html: `<video class="showcase-video-in-dialog" controls playsinline preload="metadata"><source src="${escapeHtml(url)}" type="video/mp4"/></video>`,
+      isLinkRow: false,
+    };
+  }
+  if (/\.(m4a|wav|mp3|ogg)(\?|#|$)/i.test(url)) {
+    return {
+      html: `<audio controls preload="metadata" class="chat-media-audio" src="${escapeHtml(url)}"></audio>`,
+      isLinkRow: false,
+    };
+  }
+  return { html: '', isLinkRow: false };
+}
+
+function updateCaseMediaPin(el, caseData) {
+  const url = caseData.video_url || caseData.audio_url || '';
+  const { html, isLinkRow } = renderPinnedMedia(url, caseData.video_link_label || '小红书 · 原视频来源');
+  if (!html) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    el.classList.remove('showcase-media-link-row');
+    return;
+  }
+  el.style.display = '';
+  el.innerHTML = html;
+  el.classList.toggle('showcase-media-link-row', isLinkRow);
+}
+
+function renderShowcaseMedia(showcase) {
+  const url = showcase.video_url || '';
+  const { html, isLinkRow } = renderPinnedMedia(url, showcase.video_link_label || 'Open source audio');
+  if (!html) return '';
+  const cls = isLinkRow ? 'chat-media-pin showcase-media-link-row' : 'chat-media-pin';
+  return `<div class="${cls}">${html}</div>`;
+}
+
+function mountBlogShowcase(root, showcase) {
+  const tabs = showcase.cases.map((c, i) =>
+    `<button type="button" class="qa-tab${i === 0 ? ' active' : ''}" data-i="${i}">${escapeHtml(c.tab)}</button>`
+  ).join('');
+
+  const mediaHtml = renderShowcaseMedia(showcase);
+
+  const headerNote = showcase.audio_description
+    ? ` · ${escapeHtml(showcase.audio_description)}`
+    : '';
+
+  root.innerHTML = `<section class="section-card" id="${escapeHtml(showcase.id)}">
+    <p class="part-label">Part 1</p>
+    <h2 class="task-title">${escapeHtml(showcase.title)}</h2>
+    <div class="blog-showcase">
+      <div class="qa-tabs" role="tablist">${tabs}</div>
+      <div class="chat-shell chat-shell-part1">
+        <div class="chat-header"><span class="chat-header-dot"></span> FireRedAudio${headerNote}</div>
+        <div class="chat-body">
+          ${mediaHtml}
+          <div class="chat-window" id="part1-chat"></div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+
+  const chatEl = root.querySelector('#part1-chat');
+  const tabEls = [...root.querySelectorAll('.qa-tab')];
+
+  function showCase(i) {
+    const idx = Math.max(0, Math.min(i, showcase.cases.length - 1));
+    tabEls.forEach((t, j) => t.classList.toggle('active', j === idx));
+    chatEl.innerHTML = renderChatMessages(showcase.cases[idx], { showAudio: false });
+    enhanceTables(chatEl);
+    wirePromptCopyButtons(chatEl);
+    chatEl.scrollTop = 0;
+  }
+
+  tabEls.forEach((t, i) => t.addEventListener('click', () => showCase(i)));
+  showCase(0);
+}
+
+function mountBlogSection(root, section) {
+  const tabs = section.cases.map((c, i) =>
+    `<button type="button" class="qa-tab${i === 0 ? ' active' : ''}" data-i="${i}">${escapeHtml(c.title)}</button>`
+  ).join('');
+
+  const el = document.createElement('section');
+  el.className = 'section-card';
+  el.id = section.id;
+  el.innerHTML = `<p class="part-label">Part 2</p>
+    <h2 class="task-title">${escapeHtml(section.title)}</h2>
+    <div class="qa-tabs" role="tablist">${tabs}</div>
+    <div class="chat-shell chat-shell-part1">
+      <div class="chat-header"><span class="chat-header-dot"></span> FireRedAudio</div>
+      <div class="chat-body">
+        <div class="chat-media-pin" data-section-media="${escapeHtml(section.id)}"></div>
+        <div class="chat-window" data-section-chat="${escapeHtml(section.id)}"></div>
+      </div>
+    </div>`;
+  root.appendChild(el);
+
+  const chatEl = el.querySelector('[data-section-chat]');
+  const mediaEl = el.querySelector('[data-section-media]');
+  const tabEls = [...el.querySelectorAll('.qa-tab')];
+
+  function showCase(i) {
+    const idx = Math.max(0, Math.min(i, section.cases.length - 1));
+    tabEls.forEach((t, j) => t.classList.toggle('active', j === idx));
+    const caseData = section.cases[idx];
+    updateCaseMediaPin(mediaEl, caseData);
+    chatEl.innerHTML = renderChatMessages(caseData, { showAudio: false });
+    enhanceTables(chatEl);
+    wirePromptCopyButtons(chatEl);
+    chatEl.scrollTop = 0;
+  }
+
+  tabEls.forEach((t, i) => t.addEventListener('click', () => showCase(i)));
+  showCase(0);
+}
+
+function initCaseTabs(section) {
+  const tabs = [...section.querySelectorAll('.case-tab')];
+  const panels = [...section.querySelectorAll('.case-panel, .edit-panel')];
+  if (!tabs.length) return;
+  function setActive(i) {
+    const idx = Math.max(0, Math.min(i, tabs.length - 1));
+    tabs.forEach((t, j) => t.classList.toggle('active', j === idx));
+    panels.forEach((p, j) => { p.classList.toggle('active', j === idx); p.hidden = j !== idx; });
+  }
+  tabs.forEach((t, i) => t.addEventListener('click', () => setActive(i)));
+  setActive(0);
+}
+
+function initContentsNav() {
+  const links = [...document.querySelectorAll('.top-nav-link[href^="#"]')];
+  if (!links.length) return;
+  function setActiveLink(id) {
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href').slice(1) === id));
+  }
+  links.forEach(a => a.addEventListener('click', () => setActiveLink(a.getAttribute('href').slice(1))));
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  if (!targets.length) return;
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible.length) setActiveLink(visible[0].target.id);
+  }, { rootMargin: '-20% 0px -55% 0px', threshold: [0, 0.15, 0.4, 0.7] });
+  targets.forEach(el => observer.observe(el));
+  const hash = location.hash.slice(1);
+  if (hash && targets.some(el => el.id === hash)) setActiveLink(hash);
+  else if (links[0]) setActiveLink(links[0].getAttribute('href').slice(1));
+}
+
+let mediaModal = null;
+
+function makeModalDraggable(overlay, handle) {
+  handle.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('button, a')) return;
+    e.preventDefault();
+    const rect = overlay.getBoundingClientRect();
+    const dx = e.clientX - rect.left;
+    const dy = e.clientY - rect.top;
+    function onMove(ev) {
+      const left = Math.max(0, Math.min(ev.clientX - dx, window.innerWidth - rect.width));
+      const top = Math.max(0, Math.min(ev.clientY - dy, window.innerHeight - 48));
+      overlay.style.left = left + 'px';
+      overlay.style.top = top + 'px';
+      overlay.style.right = 'auto';
+    }
+    function onUp() {
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+      handle.removeEventListener('pointercancel', onUp);
+    }
+    handle.setPointerCapture(e.pointerId);
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
+  });
+}
+
+function ensureMediaModal() {
+  if (mediaModal) return mediaModal;
+  const overlay = document.createElement('div');
+  overlay.className = 'media-modal-overlay';
+  overlay.hidden = true;
+  overlay.innerHTML = `
+    <div class="media-modal" role="dialog" aria-modal="true" aria-label="音频原始来源">
+      <div class="media-modal-header">
+        <span class="media-modal-title"></span>
+        <a class="media-modal-open" href="#" target="_blank" rel="noopener noreferrer">在新标签页打开</a>
+        <button type="button" class="media-modal-close" aria-label="关闭">×</button>
+      </div>
+      <iframe class="media-modal-frame" title="音频原始来源" loading="lazy" referrerpolicy="no-referrer"></iframe>
+      <div class="media-modal-note">部分站点不允许在页面内嵌展示；若内容空白，请点击右上角「在新标签页打开」。</div>
+    </div>`;
+  document.body.appendChild(overlay);
+  makeModalDraggable(overlay, overlay.querySelector('.media-modal-header'));
+  overlay.querySelector('.media-modal-close').addEventListener('click', closeMediaModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !overlay.hidden) closeMediaModal();
+  });
+  mediaModal = overlay;
+  return overlay;
+}
+
+function openMediaModal(url, label) {
+  const overlay = ensureMediaModal();
+  overlay.querySelector('.media-modal-title').textContent = label || '音频原始来源';
+  overlay.querySelector('.media-modal-open').href = url;
+  overlay.querySelector('.media-modal-frame').src = url;
+  overlay.style.left = '';
+  overlay.style.top = '';
+  overlay.style.right = '';
+  overlay.hidden = false;
+}
+
+function closeMediaModal() {
+  if (!mediaModal) return;
+  mediaModal.hidden = true;
+  mediaModal.querySelector('.media-modal-frame').src = 'about:blank';
+}
+
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a.showcase-media-link');
+  if (!link) return;
+  const url = link.getAttribute('href') || '';
+  if (!isExternalPageLink(url) || isDirectMediaUrl(url)) return;
+  e.preventDefault();
+  openMediaModal(url, link.textContent.trim());
+});
+
+function initIntroVideoSwitch() {
+  const card = document.querySelector('.understanding-intro-video-card');
+  if (!card) return;
+  const video = card.querySelector('.understanding-intro-video');
+  const source = video && video.querySelector('source');
+  const zhUrl = card.dataset.videoZh || '';
+  const enUrl = card.dataset.videoEn || '';
+  if (!video || !source || !zhUrl || !enUrl) return;
+  card.querySelectorAll('.intro-video-lang-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang || 'zh';
+      const url = lang === 'en' ? enUrl : zhUrl;
+      if (!url || source.getAttribute('src') === url) return;
+      card.querySelectorAll('.intro-video-lang-tab').forEach(tab => {
+        const active = tab === btn;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      const wasPlaying = !video.paused;
+      source.src = url;
+      video.load();
+      if (wasPlaying) video.play().catch(() => {});
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initIntroVideoSwitch();
+  const part1Root = document.getElementById('part1-root');
+  mountBlogShowcase(part1Root, DATA.part1);
+  const sectionsRoot = document.getElementById('sections-root');
+  DATA.sections.forEach(sec => mountBlogSection(sectionsRoot, sec));
+  const speechEditing = document.getElementById('speech-editing');
+  if (speechEditing) initCaseTabs(speechEditing);
+  initContentsNav();
+});
+</script>
+</body>
+</html>
